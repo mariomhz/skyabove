@@ -3,22 +3,11 @@
 import { useEffect, useState, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { parseStateVector, computeGlobalStats } from '@/lib/opensky';
+import type { GlobalStats } from '@/lib/opensky';
 
 gsap.registerPlugin(ScrollTrigger);
 
-interface Stats {
-  totalActive: number;
-  airborne: number;
-  onGround: number;
-  byCountry: { country: string; count: number }[];
-  avgAltitude: number;
-  avgSpeed: number;
-  totalCountries: number;
-  highestAltitude: { value: number; callsign: string | null };
-  fastestAircraft: { value: number; callsign: string | null };
-  topAirline: { code: string; count: number } | null;
-}
+type Stats = GlobalStats;
 
 // ── Per-character flip animation ───────────────────────────────────
 
@@ -114,12 +103,10 @@ export default function FlightDashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch('https://opensky-network.org/api/states/all?extended=1');
+        const res = await fetch('/api/flights');
         if (!res.ok) return;
         const data = await res.json();
-        const states: unknown[][] = data.states ?? [];
-        const flights = states.map(parseStateVector);
-        setStats(computeGlobalStats(flights));
+        setStats(data.stats);
       } catch { /* silent */ }
     };
     fetchData();
