@@ -5,12 +5,22 @@ import gsap from 'gsap';
 
 export default function InvertCursor({ targetRef }: { targetRef: React.RefObject<HTMLElement | null> }) {
   const cursorRef = useRef<HTMLDivElement>(null);
+  const clipRef = useRef<HTMLDivElement>(null);
   const isOver = useRef(false);
+  const introDone = useRef(false);
 
   useEffect(() => {
     const cursor = cursorRef.current;
+    const clip = clipRef.current;
     const target = targetRef.current;
-    if (!cursor || !target) return;
+    if (!cursor || !clip || !target) return;
+
+    // Clip the entire overlay to the h1's bounding box
+    const updateClip = () => {
+      const r = target.getBoundingClientRect();
+      clip.style.clipPath = `inset(${r.top}px ${window.innerWidth - r.right}px ${window.innerHeight - r.bottom}px ${r.left}px)`;
+    };
+    updateClip();
 
     // Slide up onto the "K" with a clip reveal
     const rect = target.getBoundingClientRect();
@@ -26,10 +36,11 @@ export default function InvertCursor({ targetRef }: { targetRef: React.RefObject
       duration: 1.6,
       delay: 0.5,
       ease: 'power2.inOut',
+      onComplete: () => { introDone.current = true; },
     });
 
     const onMove = (e: MouseEvent) => {
-      if (!isOver.current) return;
+      if (!isOver.current || !introDone.current) return;
       gsap.to(cursor, {
         x: e.clientX,
         y: e.clientY,
@@ -41,6 +52,8 @@ export default function InvertCursor({ targetRef }: { targetRef: React.RefObject
 
     const onEnter = (e: MouseEvent) => {
       isOver.current = true;
+      if (!introDone.current) return;
+      cursor.style.clipPath = 'inset(0% 0 0 0)';
       gsap.to(cursor, {
         x: e.clientX,
         y: e.clientY,
@@ -54,11 +67,15 @@ export default function InvertCursor({ targetRef }: { targetRef: React.RefObject
     };
 
     window.addEventListener('mousemove', onMove);
+    window.addEventListener('scroll', updateClip, { passive: true });
+    window.addEventListener('resize', updateClip);
     target.addEventListener('mouseenter', onEnter);
     target.addEventListener('mouseleave', onLeave);
 
     return () => {
       window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('scroll', updateClip);
+      window.removeEventListener('resize', updateClip);
       target.removeEventListener('mouseenter', onEnter);
       target.removeEventListener('mouseleave', onLeave);
     };
@@ -66,20 +83,31 @@ export default function InvertCursor({ targetRef }: { targetRef: React.RefObject
 
   return (
     <div
-      ref={cursorRef}
+      ref={clipRef}
       style={{
         position: 'fixed',
         top: 0,
         left: 0,
-        width: '300px',
-        height: '300px',
-        backgroundColor: 'white',
+        width: '100vw',
+        height: '100vh',
         pointerEvents: 'none',
         zIndex: 9999,
         mixBlendMode: 'difference',
-        marginLeft: '-150px',
-        marginTop: '-150px',
       }}
-    />
+    >
+      <div
+        ref={cursorRef}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '300px',
+          height: '300px',
+          backgroundColor: 'white',
+          marginLeft: '-150px',
+          marginTop: '-150px',
+        }}
+      />
+    </div>
   );
 }

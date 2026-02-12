@@ -3,12 +3,15 @@
 import { useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import InvertCursor from '@/components/InvertCursor';
+import FlightDashboard from '@/components/FlightDashboard';
 
 export default function Home() {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const descRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
 
     tl.fromTo(descRef.current,
@@ -25,7 +28,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-white">
       <InvertCursor targetRef={titleRef} />
-      <section className="relative flex min-h-screen flex-col items-center justify-center px-6">
+      <section className="relative flex min-h-screen flex-col items-center justify-end px-6 pb-12">
         <p
           ref={descRef}
           className="absolute top-70 max-w-3xl text-left leading-tight text-black-400 text-[clamp(2rem,13vw,1.5rem)] font-semibold tracking-tight"
@@ -35,12 +38,13 @@ export default function Home() {
         </p>
         <h1
           ref={titleRef}
-          className="text-[clamp(25rem,15vw,12rem)] font-black leading-[0.85] tracking-tighter text-black"
+          className="absolute top-[50%] text-[clamp(20rem,20vw,28rem)] font-black leading-[0.85] tracking-tighter text-black"
           style={{ cursor: 'default', opacity: 0 }}
         >
           SKYABOVE
         </h1>
       </section>
+      <FlightDashboard />
     </main>
   );
 }
