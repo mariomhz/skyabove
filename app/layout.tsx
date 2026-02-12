@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import SmoothScroll from "@/components/SmoothScroll";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -10,8 +9,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "SKYABOVE - Live Flight Tracker",
-  description: "Track flights in real-time with beautiful animations",
+  title: "SKYABOVE - Flight Dashboard",
+  description: "Metro-style flight tracking dashboard for LAX",
 };
 
 export default function RootLayout({
@@ -21,10 +20,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${inter.variable} antialiased`}
-      >
-        <SmoothScroll>{children}</SmoothScroll>
+      <body className={`${inter.variable} antialiased`}>
+        {children}
       </body>
     </html>
   );
