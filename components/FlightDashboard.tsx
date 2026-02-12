@@ -110,7 +110,7 @@ export default function FlightDashboard() {
       } catch { /* silent */ }
     };
     fetchData();
-    const interval = setInterval(fetchData, 10_000);
+    const interval = setInterval(fetchData, 15_000);
     return () => clearInterval(interval);
   }, []);
 
