@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { parseStateVector, computeGlobalStats } from '@/lib/opensky';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -111,11 +112,15 @@ export default function FlightDashboard() {
 
   // Auto-refresh every 10s
   useEffect(() => {
-    const fetchData = () => {
-      fetch('/api/flights')
-        .then((r) => r.json())
-        .then((d) => { if (d.stats) setStats(d.stats); })
-        .catch(() => {});
+    const fetchData = async () => {
+      try {
+        const res = await fetch('https://opensky-network.org/api/states/all?extended=1');
+        if (!res.ok) return;
+        const data = await res.json();
+        const states: unknown[][] = data.states ?? [];
+        const flights = states.map(parseStateVector);
+        setStats(computeGlobalStats(flights));
+      } catch { /* silent */ }
     };
     fetchData();
     const interval = setInterval(fetchData, 10_000);

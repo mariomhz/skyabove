@@ -38,7 +38,7 @@ export default function Home() {
         </p>
         <h1
           ref={titleRef}
-          className="absolute top-[50%] text-[clamp(20rem,20vw,28rem)] font-black leading-[0.85] tracking-tighter text-black"
+          className="absolute top-[50%] text-[clamp(4rem,20vw,28rem)] font-black leading-[0.85] tracking-tighter text-black"
           style={{ cursor: 'default', opacity: 0 }}
         >
           SKYABOVE
