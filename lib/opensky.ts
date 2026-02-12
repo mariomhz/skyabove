@@ -1,4 +1,5 @@
 const OPENSKY_BASE = "https://opensky-network.org/api";
+const PROXY = "";
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -72,7 +73,10 @@ export async function fetchAllFlights(): Promise<{
   time: number;
   flights: FlightState[];
 }> {
-  const res = await fetch(`${OPENSKY_BASE}/states/all?extended=1`);
+  const url = `${OPENSKY_BASE}/states/all?extended=1`;
+  const res = await fetch(url, {
+    signal: AbortSignal.timeout(30_000),
+  });
   if (!res.ok) {
     throw new Error(`OpenSky API error: ${res.status} ${res.statusText}`);
   }
@@ -94,7 +98,10 @@ export async function fetchFlightsByArea(
     lamax: String(bounds.lamax),
     lomax: String(bounds.lomax),
   });
-  const res = await fetch(`${OPENSKY_BASE}/states/all?${params}`);
+  const url = `${OPENSKY_BASE}/states/all?${params}`;
+  const res = await fetch(url, {
+    signal: AbortSignal.timeout(30_000),
+  });
   if (!res.ok) {
     throw new Error(`OpenSky API error: ${res.status} ${res.statusText}`);
   }

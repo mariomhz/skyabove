@@ -81,7 +81,10 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : "Unknown error";
+      error instanceof Error ? `${error.message} | ${error.cause}` : "Unknown error";
     return NextResponse.json({ error: message }, { status: 502 });
   }
 }
+
+export const runtime = "edge";
+export const maxDuration = 30;

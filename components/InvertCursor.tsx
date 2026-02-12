@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 
 export default function InvertCursor({ targetRef }: { targetRef: React.RefObject<HTMLElement | null> }) {
@@ -8,8 +8,14 @@ export default function InvertCursor({ targetRef }: { targetRef: React.RefObject
   const clipRef = useRef<HTMLDivElement>(null);
   const isOver = useRef(false);
   const introDone = useRef(false);
+  const [hasPointer, setHasPointer] = useState(true);
 
   useEffect(() => {
+    setHasPointer(window.matchMedia('(pointer: fine)').matches);
+  }, []);
+
+  useEffect(() => {
+    if (!hasPointer) return;
     const cursor = cursorRef.current;
     const clip = clipRef.current;
     const target = targetRef.current;
@@ -79,7 +85,9 @@ export default function InvertCursor({ targetRef }: { targetRef: React.RefObject
       target.removeEventListener('mouseenter', onEnter);
       target.removeEventListener('mouseleave', onLeave);
     };
-  }, [targetRef]);
+  }, [targetRef, hasPointer]);
+
+  if (!hasPointer) return null;
 
   return (
     <div
