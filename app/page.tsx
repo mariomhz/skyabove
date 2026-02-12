@@ -31,14 +31,14 @@ export default function Home() {
       <section className="relative flex min-h-screen flex-col items-center justify-end px-6 pb-12">
         <p
           ref={descRef}
-          className="absolute top-70 max-w-3xl text-left leading-tight text-black-400 text-[clamp(2rem,13vw,1.5rem)] font-semibold tracking-tight"
+          className="absolute top-20 md:top-70 max-w-3xl text-left leading-tight text-black-400 text-[clamp(1rem,4vw,1.5rem)] font-semibold tracking-tight px-2 md:px-0"
           style={{ opacity: 0 }}
         >
           Track flights, airlines, and destinations in real time. Clear, fast air traffic data built for aviation enthusiasts and operators.
         </p>
         <h1
           ref={titleRef}
-          className="absolute top-[50%] text-[clamp(4rem,20vw,28rem)] font-black leading-[0.85] tracking-tighter text-black"
+          className="absolute top-[35%] md:top-[50%] text-[clamp(4rem,20vw,28rem)] font-black leading-[0.85] tracking-tighter text-black"
           style={{ cursor: 'default', opacity: 0 }}
         >
           SKYABOVE
