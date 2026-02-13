@@ -9,6 +9,7 @@ export default function Home() {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const descRef = useRef<HTMLParagraphElement>(null);
   const planeRef = useRef<SVGSVGElement>(null);
+  const scrollHintRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -28,6 +29,11 @@ export default function Home() {
       { y: 20, opacity: 0 },
       { y: 0, opacity: 1, duration: 0.8 },
       '-=0.3'
+    )
+    .fromTo(scrollHintRef.current,
+      { opacity: 0 },
+      { opacity: 1, duration: 0.6 },
+      '-=0.4'
     );
 
     // Gentle bobbing loop
@@ -59,18 +65,27 @@ export default function Home() {
         >
           SKYABOVE
         </h1>
-        <svg
-          ref={planeRef}
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          className="absolute bottom-8 w-7 h-7 text-black rotate-90"
-          style={{ opacity: 0 }}
-        >
-          <path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2 1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" />
-        </svg>
+        <div className="absolute bottom-8 flex flex-col items-center gap-2">
+          <span
+            ref={scrollHintRef}
+            className="text-[10px] uppercase tracking-[0.3em] text-black/30 font-medium"
+            style={{ opacity: 0 }}
+          >
+            Scroll down
+          </span>
+          <svg
+            ref={planeRef}
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            className="w-7 h-7 text-black rotate-180"
+            style={{ opacity: 0 }}
+          >
+            <path d="M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2 1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z" />
+          </svg>
+        </div>
       </section>
       <FlightDashboard />
     </main>
