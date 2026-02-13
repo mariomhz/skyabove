@@ -52,7 +52,7 @@ export default function Home() {
       <section className="relative flex min-h-screen flex-col items-center justify-end px-6 pb-12">
         <p
           ref={descRef}
-          className="absolute top-20 md:top-70 max-w-3xl text-left leading-tight text-black-400 text-[clamp(3rem,4vw,1.5rem)] font-semibold tracking-tight px-2 md:px-0"
+          className="absolute top-20 md:top-70 max-w-3xl text-left leading-tight text-black-400 text-base md:text-[3rem] md:leading-tight font-semibold tracking-tight px-2 md:px-0"
           style={{ opacity: 0 }}
         >
           Track flights, airlines, and destinations in real time. Clear, fast air traffic data built for aviation enthusiasts and operators.

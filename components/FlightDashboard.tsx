@@ -201,6 +201,7 @@ export default function FlightDashboard() {
   const rows = stats ? buildRows(stats) : null;
 
   return (
+    <>
     <section
       ref={sectionRef}
       className="min-h-screen flex flex-col justify-center px-8 md:px-16 lg:px-24 py-16"
@@ -257,12 +258,16 @@ export default function FlightDashboard() {
             />,
           ])}
 
-      {/* Disclaimer */}
-      <p className="mt-24 max-w-lg text-[11px] leading-relaxed uppercase tracking-[0.2em] text-black/25 font-medium">
+    </section>
+
+    {/* Disclaimer */}
+    <section className="flex justify-center md:justify-end px-8 md:px-16 lg:px-24 py-24">
+      <p className="max-w-lg text-center md:text-right text-[11px] leading-relaxed uppercase tracking-[0.2em] text-black/25 font-medium">
         This site is a personal demo showcasing my frontend and backend skills.
         Flight data is provided by AviationStack&apos;s free tier, so metrics
         are sampled and may refresh infrequently due to API rate limits.
       </p>
     </section>
+    </>
   );
 }
