@@ -3,11 +3,9 @@
 import { useEffect, useState, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import type { GlobalStats } from '@/lib/opensky';
+import type { DashboardStats } from '@/lib/aviationstack';
 
 gsap.registerPlugin(ScrollTrigger);
-
-type Stats = GlobalStats;
 
 // ── Per-character flip animation ───────────────────────────────────
 
@@ -75,42 +73,107 @@ function FlipValue({ value, className }: { value: string; className?: string }) 
 
 // ── Dashboard rows ─────────────────────────────────────────────────
 
-function buildRows(stats: Stats) {
-  return [
-    { label: 'AIRCRAFT TRACKED', value: stats.totalActive.toLocaleString() },
-    { label: 'CURRENTLY AIRBORNE', value: stats.airborne.toLocaleString() },
-    { label: 'ON GROUND', value: stats.onGround.toLocaleString() },
-    { label: 'BUSIEST COUNTRY', value: stats.byCountry[0]?.country.toUpperCase() ?? '—' },
-    { label: 'MOST ACTIVE AIRLINE', value: stats.topAirline ? `${stats.topAirline.code} — ${stats.topAirline.count.toLocaleString()}` : '—' },
-    { label: 'HIGHEST ALTITUDE', value: `${stats.highestAltitude.value.toLocaleString()} M` },
-    { label: 'FASTEST AIRCRAFT', value: `${Math.round(stats.fastestAircraft.value * 3.6).toLocaleString()} KM/H` },
-    { label: 'COUNTRIES REPRESENTED', value: String(stats.totalCountries) },
-    { label: 'AVG CRUISING ALTITUDE', value: `${stats.avgAltitude.toLocaleString()} M` },
-    { label: 'AVG GROUND SPEED', value: `${Math.round(stats.avgSpeed * 3.6).toLocaleString()} KM/H` },
+function buildRows(stats: DashboardStats) {
+  const rows = [
+    { label: 'FLIGHTS WORLDWIDE', value: stats.totalFlights.toLocaleString() },
+    { label: 'CURRENTLY ACTIVE', value: stats.activeFlights.toLocaleString() },
+    { label: 'LANDED', value: stats.landedFlights.toLocaleString() },
+    { label: 'TOP AIRLINE', value: stats.topAirlines[0]?.name.toUpperCase() ?? '—' },
+    {
+      label: 'BUSIEST DEPARTURE',
+      value: stats.busiestDepartures[0]
+        ? `${stats.busiestDepartures[0].iata}`
+        : '—',
+    },
+    {
+      label: 'BUSIEST ARRIVAL',
+      value: stats.busiestArrivals[0]
+        ? `${stats.busiestArrivals[0].iata}`
+        : '—',
+    },
+    {
+      label: 'AVG DEPARTURE DELAY',
+      value: stats.avgDepartureDelay > 0 ? `${stats.avgDepartureDelay} MIN` : 'ON TIME',
+    },
+    {
+      label: 'MOST DELAYED FLIGHT',
+      value: stats.mostDelayedFlight
+        ? `${stats.mostDelayedFlight.iata} — ${stats.mostDelayedFlight.delay} MIN`
+        : '—',
+    },
+    { label: 'SCHEDULED', value: stats.scheduledFlights.toLocaleString() },
+    {
+      label: 'SAMPLE SIZE',
+      value: `${stats.dataScope.toLocaleString()} OF ${stats.totalFlights.toLocaleString()}`,
+    },
   ];
+
+  // Bonus rows when live telemetry is available
+  if (stats.hasLiveData) {
+    if (stats.highestAltitude) {
+      rows.push({
+        label: 'HIGHEST ALTITUDE',
+        value: `${stats.highestAltitude.value.toLocaleString()} M`,
+      });
+    }
+    if (stats.fastestAircraft) {
+      rows.push({
+        label: 'FASTEST AIRCRAFT',
+        value: `${Math.round(stats.fastestAircraft.value).toLocaleString()} KM/H`,
+      });
+    }
+    if (stats.avgAltitude != null) {
+      rows.push({
+        label: 'AVG CRUISING ALTITUDE',
+        value: `${stats.avgAltitude.toLocaleString()} M`,
+      });
+    }
+    if (stats.avgSpeed != null) {
+      rows.push({
+        label: 'AVG GROUND SPEED',
+        value: `${Math.round(stats.avgSpeed).toLocaleString()} KM/H`,
+      });
+    }
+  }
+
+  return rows;
+}
+
+function formatTime(iso: string) {
+  const d = new Date(iso);
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
 // ── Main component ─────────────────────────────────────────────────
 
 export default function FlightDashboard() {
-  const [stats, setStats] = useState<Stats | null>(null);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [stale, setStale] = useState(false);
   const [visible, setVisible] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const rowsRef = useRef<HTMLDivElement[]>([]);
   const entranceDone = useRef(false);
 
-  // Auto-refresh every 10s
+  // Auto-refresh every 5 minutes
   useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await fetch('/api/flights');
-        if (!res.ok) return;
         const data = await res.json();
+        if (data.error && !data.stats) {
+          setError(data.error);
+          return;
+        }
         setStats(data.stats);
-      } catch { /* silent */ }
+        setStale(!!data.stale);
+        setError(data.stale ? data.error : null);
+      } catch {
+        setError('Failed to connect to server');
+      }
     };
     fetchData();
-    const interval = setInterval(fetchData, 15_000);
+    const interval = setInterval(fetchData, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -142,6 +205,21 @@ export default function FlightDashboard() {
       ref={sectionRef}
       className="min-h-screen flex flex-col justify-center px-8 md:px-16 lg:px-24 py-16"
     >
+      {/* Error banner */}
+      {error && (
+        <div className="mb-6 text-[11px] uppercase tracking-[0.25em] text-black/30 font-medium">
+          {stale ? 'SHOWING CACHED DATA — ' : ''}
+          {error}
+        </div>
+      )}
+
+      {/* Last updated timestamp */}
+      {stats && (
+        <div className="mb-8 text-[11px] uppercase tracking-[0.25em] text-black/30 font-medium">
+          LAST UPDATED {formatTime(stats.fetchedAt)}
+        </div>
+      )}
+
       {rows
         ? rows.map((row, i) => (
             <div

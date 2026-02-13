@@ -1,59 +1,46 @@
-import { NextRequest, NextResponse } from "next/server";
-import {
-  fetchAllFlights,
-  fetchFlightsByArea,
-  computeGlobalStats,
-} from "@/lib/opensky";
+import { NextResponse } from "next/server";
+import { fetchFlights, computeDashboardStats } from "@/lib/aviationstack";
+import type { DashboardStats } from "@/lib/aviationstack";
 
 export const preferredRegion = "fra1";
 export const maxDuration = 30;
 
-// In-memory cache to avoid hammering OpenSky's rate limits
-let cache: { data: unknown; ts: number } | null = null;
-const CACHE_TTL = 15_000; // 15 seconds
+let cache: { stats: DashboardStats; ts: number } | null = null;
+const CACHE_TTL = 30 * 60 * 1000; // 30 minutes (budget: ~3 API calls/day)
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const { searchParams } = request.nextUrl;
-    const lamin = searchParams.get("lamin");
-    const lomin = searchParams.get("lomin");
-    const lamax = searchParams.get("lamax");
-    const lomax = searchParams.get("lomax");
-
-    const isAreaQuery = lamin && lomin && lamax && lomax;
-
-    // Serve from cache for non-area (global) queries
-    if (!isAreaQuery && cache && Date.now() - cache.ts < CACHE_TTL) {
-      return NextResponse.json(cache.data);
+    // Serve from cache if fresh
+    if (cache && Date.now() - cache.ts < CACHE_TTL) {
+      return NextResponse.json({
+        stats: cache.stats,
+        cached: true,
+        cacheAge: Math.round((Date.now() - cache.ts) / 1000),
+      });
     }
 
-    const result = isAreaQuery
-      ? await fetchFlightsByArea({
-          lamin: Number(lamin),
-          lomin: Number(lomin),
-          lamax: Number(lamax),
-          lomax: Number(lomax),
-        })
-      : await fetchAllFlights();
+    const { flights, total } = await fetchFlights();
+    const stats = computeDashboardStats(flights, total);
 
-    const stats = computeGlobalStats(result.flights);
+    cache = { stats, ts: Date.now() };
 
-    const payload = {
-      time: result.time,
-      total: result.flights.length,
+    return NextResponse.json({
       stats,
-    };
-
-    if (!isAreaQuery) {
-      cache = { data: payload, ts: Date.now() };
-    }
-
-    return NextResponse.json(payload);
+      cached: false,
+      cacheAge: 0,
+    });
   } catch (error) {
-    // If OpenSky is down/rate-limited but we have stale cache, serve it
+    // Serve stale cache if available
     if (cache) {
-      return NextResponse.json(cache.data);
+      return NextResponse.json({
+        stats: cache.stats,
+        cached: true,
+        stale: true,
+        cacheAge: Math.round((Date.now() - cache.ts) / 1000),
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
     }
+
     const message =
       error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 502 });
