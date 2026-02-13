@@ -89,7 +89,7 @@ export default function Home() {
       <FlightDashboard />
       <footer className="px-8 md:px-16 lg:px-24 pb-12 text-center">
         <p className="text-[10px] uppercase tracking-[0.3em] text-black/20 font-medium">
-          Developed and designed by Mario Hernandez
+          &copy; Developed and designed by Mario Hernandez
         </p>
       </footer>
     </main>
