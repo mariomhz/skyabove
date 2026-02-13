@@ -8,7 +8,7 @@ import type { DashboardStats } from '@/lib/aviationstack';
 gsap.registerPlugin(ScrollTrigger);
 
 // Reusable utility for the repeated label pattern
-const labelClass = 'text-xs sm:text-sm uppercase tracking-[0.3em] text-black/30 font-medium';
+const labelClass = 'text-xs sm:text-sm md:text-base uppercase tracking-[0.3em] text-black/30 font-medium';
 
 function FlipChar({ char }: { char: string }) {
   const prevRef = useRef(char);
@@ -198,7 +198,7 @@ export default function FlightDashboard() {
     <>
     <section
       ref={sectionRef}
-      className="mx-auto max-w-7xl min-h-screen flex flex-col justify-center px-6 sm:px-8 md:px-12 lg:px-16 xl:px-24 2xl:px-32 py-8 sm:py-12 md:py-16 lg:py-20 xl:py-24"
+      className="min-h-screen flex flex-col justify-center px-6 sm:px-8 md:px-12 lg:px-16 xl:px-20 2xl:px-24 py-8 sm:py-12 md:py-16 lg:py-20 xl:py-24 2xl:py-28"
     >
       {error && (
         <div className={labelClass + ' mb-6'}>
@@ -220,7 +220,7 @@ export default function FlightDashboard() {
               ref={(el) => {
                 if (el) rowsRef.current[i] = el;
               }}
-              className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 sm:gap-2 py-4 sm:py-5 md:py-6 lg:py-7"
+              className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 sm:gap-2 py-4 sm:py-5 md:py-6 lg:py-7 xl:py-8"
               style={visible ? undefined : { opacity: 0 }}
             >
               <span className={labelClass}>
@@ -228,7 +228,7 @@ export default function FlightDashboard() {
               </span>
               <FlipValue
                 value={row.value}
-                className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black text-black tracking-tight tabular-nums"
+                className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-black text-black tracking-tight tabular-nums"
               />
             </div>,
             <div
@@ -239,10 +239,10 @@ export default function FlightDashboard() {
         : Array.from({ length: 10 }).flatMap((_, i) => [
             <div
               key={i}
-              className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 sm:gap-2 py-4 sm:py-5 md:py-6 lg:py-7"
+              className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4 sm:gap-2 py-4 sm:py-5 md:py-6 lg:py-7 xl:py-8"
             >
               <div className="h-3 w-36 bg-black/[0.06] rounded animate-pulse" />
-              <div className="h-8 sm:h-10 md:h-12 lg:h-14 xl:h-16 w-28 sm:w-32 md:w-40 lg:w-48 bg-black/[0.06] rounded animate-pulse" />
+              <div className="h-8 sm:h-10 md:h-12 lg:h-14 xl:h-16 2xl:h-20 w-28 sm:w-32 md:w-40 lg:w-48 xl:w-56 bg-black/[0.06] rounded animate-pulse" />
             </div>,
             <div
               key={`sep-${i}`}
@@ -252,8 +252,8 @@ export default function FlightDashboard() {
 
     </section>
 
-    <section className="mx-auto max-w-7xl flex flex-col md:flex-row justify-center md:justify-end px-6 sm:px-8 md:px-12 lg:px-16 xl:px-24 2xl:px-32 py-8 sm:py-10 md:py-12 lg:py-16 xl:py-24">
-      <p className="max-w-lg text-center md:text-right text-xs sm:text-sm leading-relaxed uppercase tracking-[0.2em] text-black/25 font-medium">
+    <section className="flex flex-col md:flex-row justify-center md:justify-end px-6 sm:px-8 md:px-12 lg:px-16 xl:px-20 2xl:px-24 py-8 sm:py-10 md:py-12 lg:py-16 xl:py-20 2xl:py-24">
+      <p className="max-w-lg text-center md:text-right text-xs sm:text-sm md:text-base leading-relaxed uppercase tracking-[0.2em] text-black/25 font-medium">
         This site is a personal demo showcasing my frontend and backend skills.
         Flight data is provided by AviationStack&apos;s free tier, so metrics
         are sampled and may refresh infrequently due to API rate limits.
