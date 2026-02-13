@@ -248,6 +248,13 @@ export default function FlightDashboard() {
               <div className="h-8 md:h-12 w-28 md:w-40 bg-black/[0.06] rounded animate-pulse" />
             </div>
           ))}
+
+      {/* Disclaimer */}
+      <p className="mt-12 max-w-lg text-[11px] leading-relaxed uppercase tracking-[0.2em] text-black/25 font-medium">
+        This site is a personal demo showcasing my frontend and backend skills.
+        Flight data is provided by AviationStack&apos;s free tier, so metrics
+        are sampled and may refresh infrequently due to API rate limits.
+      </p>
     </section>
   );
 }
