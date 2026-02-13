@@ -221,13 +221,13 @@ export default function FlightDashboard() {
       )}
 
       {rows
-        ? rows.map((row, i) => (
+        ? rows.flatMap((row, i) => [
             <div
               key={row.label}
               ref={(el) => {
                 if (el) rowsRef.current[i] = el;
               }}
-              className="flex items-baseline justify-between border-b border-black/10 py-5 md:py-6"
+              className="flex items-baseline justify-between py-5 md:py-6"
               style={visible ? undefined : { opacity: 0 }}
             >
               <span className="text-[11px] md:text-xs uppercase tracking-[0.25em] text-black/40 font-medium">
@@ -237,20 +237,28 @@ export default function FlightDashboard() {
                 value={row.value}
                 className="text-2xl md:text-4xl lg:text-5xl font-black text-black tracking-tight tabular-nums"
               />
-            </div>
-          ))
-        : Array.from({ length: 10 }).map((_, i) => (
+            </div>,
+            <div
+              key={`sep-${i}`}
+              style={{ border: 'none', borderTop: '1px solid', borderImage: 'linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%) 1' }}
+            />,
+          ])
+        : Array.from({ length: 10 }).flatMap((_, i) => [
             <div
               key={i}
-              className="flex items-baseline justify-between border-b border-black/10 py-5 md:py-6"
+              className="flex items-baseline justify-between py-5 md:py-6"
             >
               <div className="h-3 w-36 bg-black/[0.06] rounded animate-pulse" />
               <div className="h-8 md:h-12 w-28 md:w-40 bg-black/[0.06] rounded animate-pulse" />
-            </div>
-          ))}
+            </div>,
+            <div
+              key={`sep-${i}`}
+              style={{ border: 'none', borderTop: '1px solid', borderImage: 'linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%) 1' }}
+            />,
+          ])}
 
       {/* Disclaimer */}
-      <p className="mt-12 max-w-lg text-[11px] leading-relaxed uppercase tracking-[0.2em] text-black/25 font-medium">
+      <p className="mt-24 max-w-lg text-[11px] leading-relaxed uppercase tracking-[0.2em] text-black/25 font-medium">
         This site is a personal demo showcasing my frontend and backend skills.
         Flight data is provided by AviationStack&apos;s free tier, so metrics
         are sampled and may refresh infrequently due to API rate limits.
