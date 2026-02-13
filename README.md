@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SKYABOVE
 
-## Getting Started
+Live flight statistics dashboard built with Next.js. Displays real-time aviation metrics from the AviationStack API with animated flip-clock transitions.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Next.js 16
+- React 19
+- TypeScript 5
+- Tailwind CSS 4
+- GSAP with ScrollTrigger
+
+## Features
+
+- 10+ real-time flight statistics (active flights, top airlines, busiest airports, delays, etc.)
+- Per-character flip animations on value changes
+- Scroll-triggered staggered entrance animations
+- Skeleton loading states during data fetch
+- Invert cursor effect on the hero title
+- Server-side API caching with stale-while-revalidate fallback
+- Responsive layout for mobile and desktop
+
+## Setup
+
+```
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Create a `.env.local` file with your AviationStack API key:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+AVIATIONSTACK_API_KEY=your_key_here
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Run the development server:
 
-## Learn More
+```
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Deployment
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The project is deployed on Vercel. Set the `AVIATIONSTACK_API_KEY` environment variable in your Vercel project settings before deploying.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Notes
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The AviationStack free plan allows approximately 100 API requests per month. The server caches responses for 30 minutes and the client polls every 5 minutes to stay within this budget.

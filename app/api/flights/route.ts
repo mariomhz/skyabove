@@ -6,11 +6,10 @@ export const preferredRegion = "fra1";
 export const maxDuration = 30;
 
 let cache: { stats: DashboardStats; ts: number } | null = null;
-const CACHE_TTL = 30 * 60 * 1000; // 30 minutes (budget: ~3 API calls/day)
+const CACHE_TTL = 30 * 60 * 1000;
 
 export async function GET() {
   try {
-    // Serve from cache if fresh
     if (cache && Date.now() - cache.ts < CACHE_TTL) {
       return NextResponse.json({
         stats: cache.stats,
@@ -30,7 +29,6 @@ export async function GET() {
       cacheAge: 0,
     });
   } catch (error) {
-    // Serve stale cache if available
     if (cache) {
       return NextResponse.json({
         stats: cache.stats,

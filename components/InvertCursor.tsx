@@ -21,14 +21,12 @@ export default function InvertCursor({ targetRef }: { targetRef: React.RefObject
     const target = targetRef.current;
     if (!cursor || !clip || !target) return;
 
-    // Clip the entire overlay to the h1's bounding box
     const updateClip = () => {
       const r = target.getBoundingClientRect();
       clip.style.clipPath = `inset(${r.top}px ${window.innerWidth - r.right}px ${window.innerHeight - r.bottom}px ${r.left}px)`;
     };
     updateClip();
 
-    // Slide up onto the "K" with a clip reveal
     const rect = target.getBoundingClientRect();
     const restY = rect.top + rect.height / 2;
     gsap.set(cursor, {

@@ -7,8 +7,6 @@ import type { DashboardStats } from '@/lib/aviationstack';
 
 gsap.registerPlugin(ScrollTrigger);
 
-// ── Per-character flip animation ───────────────────────────────────
-
 function FlipChar({ char }: { char: string }) {
   const prevRef = useRef(char);
   const [outgoing, setOutgoing] = useState<string | null>(null);
@@ -71,8 +69,6 @@ function FlipValue({ value, className }: { value: string; className?: string }) 
   );
 }
 
-// ── Dashboard rows ─────────────────────────────────────────────────
-
 function buildRows(stats: DashboardStats) {
   const rows = [
     { label: 'FLIGHTS WORLDWIDE', value: stats.totalFlights.toLocaleString() },
@@ -108,7 +104,6 @@ function buildRows(stats: DashboardStats) {
     },
   ];
 
-  // Bonus rows when live telemetry is available
   if (stats.hasLiveData) {
     if (stats.highestAltitude) {
       rows.push({
@@ -144,8 +139,6 @@ function formatTime(iso: string) {
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-// ── Main component ─────────────────────────────────────────────────
-
 export default function FlightDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -155,7 +148,6 @@ export default function FlightDashboard() {
   const rowsRef = useRef<HTMLDivElement[]>([]);
   const entranceDone = useRef(false);
 
-  // Auto-refresh every 5 minutes
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -177,7 +169,6 @@ export default function FlightDashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  // Entrance animation (runs once)
   useEffect(() => {
     if (!stats || entranceDone.current || !sectionRef.current) return;
     entranceDone.current = true;
@@ -206,7 +197,6 @@ export default function FlightDashboard() {
       ref={sectionRef}
       className="min-h-screen flex flex-col justify-center px-8 md:px-16 lg:px-24 py-16"
     >
-      {/* Error banner */}
       {error && (
         <div className="mb-6 text-[11px] uppercase tracking-[0.25em] text-black/30 font-medium">
           {stale ? 'SHOWING CACHED DATA — ' : ''}
@@ -214,7 +204,6 @@ export default function FlightDashboard() {
         </div>
       )}
 
-      {/* Last updated timestamp */}
       {stats && (
         <div className="mb-8 text-[11px] uppercase tracking-[0.25em] text-black/30 font-medium">
           LAST UPDATED {formatTime(stats.fetchedAt)}
@@ -260,7 +249,6 @@ export default function FlightDashboard() {
 
     </section>
 
-    {/* Disclaimer */}
     <section className="flex justify-center md:justify-end px-8 md:px-16 lg:px-24 py-24">
       <p className="max-w-lg text-center md:text-right text-[11px] leading-relaxed uppercase tracking-[0.2em] text-black/25 font-medium">
         This site is a personal demo showcasing my frontend and backend skills.

@@ -1,5 +1,3 @@
-// AviationStack API client (free plan: HTTP only, 100 req/month, 100 results/call)
-
 export interface AviationStackFlight {
   flight_date: string;
   flight_status: "scheduled" | "active" | "landed" | "cancelled" | "incident" | "diverted";
@@ -120,16 +118,13 @@ export function computeDashboardStats(
   let fastest: { value: number; flight: string } | null = null;
 
   for (const f of flights) {
-    // Status counts
     if (f.flight_status === "active") active++;
     else if (f.flight_status === "landed") landed++;
     else if (f.flight_status === "scheduled") scheduled++;
 
-    // Airline tally
     const airlineName = f.airline?.name || "Unknown";
     airlineCounts.set(airlineName, (airlineCounts.get(airlineName) ?? 0) + 1);
 
-    // Departure airport tally
     const depIata = f.departure?.iata;
     if (depIata) {
       const existing = departureCounts.get(depIata);
@@ -140,7 +135,6 @@ export function computeDashboardStats(
       }
     }
 
-    // Arrival airport tally
     const arrIata = f.arrival?.iata;
     if (arrIata) {
       const existing = arrivalCounts.get(arrIata);
@@ -151,7 +145,6 @@ export function computeDashboardStats(
       }
     }
 
-    // Delay tracking
     const delay = f.departure?.delay;
     if (delay != null && delay > 0) {
       totalDelay += delay;
@@ -161,7 +154,6 @@ export function computeDashboardStats(
       }
     }
 
-    // Live telemetry
     if (f.live) {
       if (f.live.altitude > 0) {
         liveAltitudes.push(f.live.altitude);
@@ -180,7 +172,6 @@ export function computeDashboardStats(
     }
   }
 
-  // Sort and pick top entries
   const topAirlines = [...airlineCounts.entries()]
     .map(([name, count]) => ({ name, count }))
     .sort((a, b) => b.count - a.count)
