@@ -220,7 +220,7 @@ export default function FlightDashboard() {
               ref={(el) => {
                 if (el) rowsRef.current[i] = el;
               }}
-              className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 sm:gap-3 py-3 sm:py-4 md:py-5 lg:py-6 xl:py-7"
+              className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 sm:gap-3 py-1"
               style={visible ? undefined : { opacity: 0 }}
             >
               <span className={labelClass}>
@@ -239,7 +239,7 @@ export default function FlightDashboard() {
         : Array.from({ length: 10 }).flatMap((_, i) => [
             <div
               key={i}
-              className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 sm:gap-3 py-3 sm:py-4 md:py-5 lg:py-6 xl:py-7"
+              className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 sm:gap-3 py-1"
             >
               <div className="h-3 w-32 sm:w-36 bg-black/[0.06] rounded animate-pulse" />
               <div className="h-6 sm:h-8 md:h-10 lg:h-12 xl:h-14 2xl:h-16 w-24 sm:w-28 md:w-36 lg:w-44 xl:w-52 bg-black/[0.06] rounded animate-pulse" />
@@ -252,7 +252,7 @@ export default function FlightDashboard() {
 
     </section>
 
-    <section className="flex flex-col md:flex-row justify-center md:justify-end px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20 py-6 sm:py-8 md:py-10 lg:py-12 xl:py-16 2xl:py-20">
+    <section className="flex flex-col md:flex-row justify-center md:justify-end px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20 py-4">
       <p className="max-w-sm md:max-w-md lg:max-w-lg text-center md:text-right text-[9px] sm:text-[10px] md:text-xs leading-relaxed uppercase tracking-[0.2em] text-black/25 font-medium">
         This site is a personal demo showcasing my frontend and backend skills.
         Flight data is provided by AviationStack&apos;s free tier, so metrics

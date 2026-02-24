@@ -90,7 +90,7 @@ export default function Home() {
         </div>
       </section>
       <FlightDashboard />
-      <footer className="px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20 py-6 sm:py-8 md:py-10 lg:py-12 xl:py-16 2xl:py-20 text-center">
+      <footer className="px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20 py-4 text-center">
         <p className={labelClass}>
           &copy; 2026 Developed and designed by Mario Hernandez
         </p>
