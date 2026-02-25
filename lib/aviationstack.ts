@@ -69,7 +69,7 @@ export interface DashboardStats {
 }
 
 const API_KEY = process.env.AVIATIONSTACK_API_KEY;
-const BASE_URL = "http://api.aviationstack.com/v1";
+const BASE_URL = "https://api.aviationstack.com/v1";
 
 export async function fetchFlights(): Promise<{
   flights: AviationStackFlight[];

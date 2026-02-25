@@ -1,16 +1,27 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, memo } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import type { DashboardStats } from '@/lib/aviationstack';
+
+const POLL_INTERVAL = 5 * 60 * 1000;
+const MAX_RETRIES = 3;
+
+interface FlightsApiResponse {
+  stats?: DashboardStats;
+  cached?: boolean;
+  stale?: boolean;
+  cacheAge?: number;
+  error?: string;
+}
 
 gsap.registerPlugin(ScrollTrigger);
 
 // Reusable utility for the repeated label pattern
 const labelClass = 'text-[9px] sm:text-[10px] md:text-xs uppercase tracking-[0.3em] text-black/30 font-medium';
 
-function FlipChar({ char }: { char: string }) {
+const FlipChar = memo(function FlipChar({ char }: { char: string }) {
   const prevRef = useRef(char);
   const [outgoing, setOutgoing] = useState<string | null>(null);
   const outRef = useRef<HTMLSpanElement>(null);
@@ -60,7 +71,7 @@ function FlipChar({ char }: { char: string }) {
       </span>
     </span>
   );
-}
+});
 
 function FlipValue({ value, className }: { value: string; className?: string }) {
   return (
@@ -152,23 +163,28 @@ export default function FlightDashboard() {
   const entranceDone = useRef(false);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (attempt = 0): Promise<void> => {
       try {
         const res = await fetch('/api/flights');
-        const data = await res.json();
+        const data: FlightsApiResponse = await res.json();
         if (data.error && !data.stats) {
           setError(data.error);
           return;
         }
-        setStats(data.stats);
+        setStats(data.stats ?? null);
         setStale(!!data.stale);
-        setError(data.stale ? data.error : null);
+        setError(data.stale ? (data.error ?? null) : null);
       } catch {
+        if (attempt < MAX_RETRIES) {
+          const delay = 1000 * 2 ** attempt;
+          await new Promise((r) => setTimeout(r, delay));
+          return fetchData(attempt + 1);
+        }
         setError('Failed to connect to server');
       }
     };
     fetchData();
-    const interval = setInterval(fetchData, 5 * 60 * 1000);
+    const interval = setInterval(() => fetchData(), POLL_INTERVAL);
     return () => clearInterval(interval);
   }, []);
 
