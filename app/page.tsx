@@ -4,9 +4,7 @@ import { useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import InvertCursor from '@/components/InvertCursor';
 import FlightDashboard from '@/components/FlightDashboard';
-
-// Reusable utility for the repeated label pattern
-const labelClass = 'text-xs sm:text-sm md:text-base uppercase tracking-[0.3em] text-black/30 font-medium';
+import { labelClass } from '@/lib/styles';
 
 export default function Home() {
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -16,6 +14,12 @@ export default function Home() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      gsap.set([descRef.current, titleRef.current, planeRef.current, scrollHintRef.current], { opacity: 1 });
+      return;
+    }
 
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
 
@@ -52,7 +56,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-white">
       <InvertCursor targetRef={titleRef} />
-      <section className="relative flex min-h-screen flex-col items-center justify-end px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20 pb-6 sm:pb-8 md:pb-12 lg:pb-16 xl:pb-20 2xl:pb-24">
+      <section aria-label="Hero" className="relative flex min-h-screen flex-col items-center justify-end px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20 pb-6 sm:pb-8 md:pb-12 lg:pb-16 xl:pb-20 2xl:pb-24">
         <p
           ref={descRef}
           className="absolute top-12 sm:top-16 md:top-24 lg:top-32 xl:top-40 2xl:top-48 max-w-full sm:max-w-sm md:max-w-md lg:max-w-xl xl:max-w-2xl text-left leading-snug text-black/40 text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl 2xl:text-[1.75rem] lg:leading-tight xl:leading-tight font-semibold tracking-tight px-2 sm:px-0"
@@ -82,6 +86,7 @@ export default function Home() {
             height="24"
             viewBox="0 0 24 24"
             fill="currentColor"
+            aria-hidden="true"
             className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 text-black rotate-180"
             style={{ opacity: 0 }}
           >

@@ -4,9 +4,15 @@ import { useEffect, useState, useRef, memo } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import type { DashboardStats } from '@/lib/aviationstack';
+import { labelClassSm as labelClass } from '@/lib/styles';
 
 const POLL_INTERVAL = 5 * 60 * 1000;
 const MAX_RETRIES = 3;
+const FLIP_DURATION = 0.7;
+const FLIP_STAGGER = 0.15;
+const FLIP_CLEANUP_DELAY = FLIP_DURATION + FLIP_STAGGER + 100;
+const ENTRANCE_DURATION = 0.7;
+const ENTRANCE_STAGGER = 0.08;
 
 interface FlightsApiResponse {
   stats?: DashboardStats;
@@ -17,9 +23,6 @@ interface FlightsApiResponse {
 }
 
 gsap.registerPlugin(ScrollTrigger);
-
-// Reusable utility for the repeated label pattern
-const labelClass = 'text-[9px] sm:text-[10px] md:text-xs uppercase tracking-[0.3em] text-black/30 font-medium';
 
 const FlipChar = memo(function FlipChar({ char }: { char: string }) {
   const prevRef = useRef(char);
@@ -41,21 +44,26 @@ const FlipChar = memo(function FlipChar({ char }: { char: string }) {
 
   useEffect(() => {
     if (outgoing === null) return;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      setOutgoing(null);
+      return;
+    }
     if (outRef.current) {
       gsap.fromTo(
         outRef.current,
         { y: 0, opacity: 1 },
-        { y: '0.4em', opacity: 0, duration: 0.7, ease: 'power3.inOut' }
+        { y: '0.4em', opacity: 0, duration: FLIP_DURATION, ease: 'power3.inOut' }
       );
     }
     if (inRef.current) {
       gsap.fromTo(
         inRef.current,
         { y: '-0.4em', opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.7, delay: 0.15, ease: 'power3.inOut', overwrite: true }
+        { y: 0, opacity: 1, duration: FLIP_DURATION, delay: FLIP_STAGGER, ease: 'power3.inOut', overwrite: true }
       );
     }
-    const timer = setTimeout(() => setOutgoing(null), 1000);
+    const timer = setTimeout(() => setOutgoing(null), FLIP_CLEANUP_DELAY);
     return () => clearTimeout(timer);
   }, [outgoing]);
 
@@ -192,13 +200,19 @@ export default function FlightDashboard() {
     if (!stats || entranceDone.current || !sectionRef.current) return;
     entranceDone.current = true;
 
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) {
+      setVisible(true);
+      return;
+    }
+
     const rows = rowsRef.current.filter(Boolean);
     gsap.set(rows, { y: 30, opacity: 0 });
     gsap.to(rows, {
       y: 0,
       opacity: 1,
-      duration: 0.7,
-      stagger: 0.08,
+      duration: ENTRANCE_DURATION,
+      stagger: ENTRANCE_STAGGER,
       ease: 'power3.out',
       scrollTrigger: {
         trigger: sectionRef.current,
@@ -214,10 +228,11 @@ export default function FlightDashboard() {
     <>
     <section
       ref={sectionRef}
+      aria-label="Live flight statistics"
       className="min-h-screen flex flex-col justify-center px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20 py-6 sm:py-8 md:py-12 lg:py-16 xl:py-20 2xl:py-24"
     >
       {error && (
-        <div className={labelClass + ' mb-4 sm:mb-6'}>
+        <div role="status" className={labelClass + ' mb-4 sm:mb-6'}>
           {stale ? 'SHOWING CACHED DATA — ' : ''}
           {error}
         </div>
@@ -269,7 +284,7 @@ export default function FlightDashboard() {
     </section>
 
     <section className="flex flex-col md:flex-row justify-center md:justify-end px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20 py-4">
-      <p className="max-w-sm md:max-w-md lg:max-w-lg text-center md:text-right text-[9px] sm:text-[10px] md:text-xs leading-relaxed uppercase tracking-[0.2em] text-black/25 font-medium">
+      <p className="max-w-sm md:max-w-md lg:max-w-lg text-center md:text-right text-[11px] sm:text-xs md:text-sm leading-relaxed uppercase tracking-[0.2em] text-black/25 font-medium">
         This site is a personal demo showcasing my frontend and backend skills.
         Flight data is provided by AviationStack&apos;s free tier, so metrics
         are sampled and may refresh infrequently due to API rate limits.
