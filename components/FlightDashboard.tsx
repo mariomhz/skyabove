@@ -229,7 +229,7 @@ export default function FlightDashboard() {
     <section
       ref={sectionRef}
       aria-label="Live flight statistics"
-      className="min-h-screen flex flex-col justify-center px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20 py-6 sm:py-8 md:py-12 lg:py-16 xl:py-20 2xl:py-24"
+      className="min-h-screen flex flex-col justify-center px-4 sm:px-6 md:px-8 lg:px-12 xl:px-14 2xl:px-20 py-6 sm:py-8 md:py-12 lg:py-16 xl:py-16 2xl:py-24"
     >
       {error && (
         <div role="status" className={labelClass + ' mb-4 sm:mb-6'}>
@@ -259,7 +259,7 @@ export default function FlightDashboard() {
               </span>
               <FlipValue
                 value={row.value}
-                className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-black text-black tracking-tight tabular-nums"
+                className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-2xl 2xl:text-4xl font-black text-black tracking-tight tabular-nums"
               />
             </div>,
             <div
@@ -283,7 +283,7 @@ export default function FlightDashboard() {
 
     </section>
 
-    <section className="flex flex-col md:flex-row justify-center md:justify-end px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20 py-4">
+    <section className="flex flex-col md:flex-row justify-center md:justify-end px-4 sm:px-6 md:px-8 lg:px-12 xl:px-14 2xl:px-20 py-4">
       <p className="max-w-sm md:max-w-md lg:max-w-lg text-center md:text-right text-[11px] sm:text-xs md:text-sm leading-relaxed uppercase tracking-[0.2em] text-black/25 font-medium">
         This site is a personal demo showcasing my frontend and backend skills.
         Flight data is provided by AviationStack&apos;s free tier, so metrics

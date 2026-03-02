@@ -56,17 +56,17 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-white">
       <InvertCursor targetRef={titleRef} />
-      <section aria-label="Hero" className="relative flex min-h-screen flex-col items-center justify-end px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20 pb-6 sm:pb-8 md:pb-12 lg:pb-16 xl:pb-20 2xl:pb-24">
+      <section aria-label="Hero" className="relative flex min-h-screen flex-col items-center justify-end px-4 sm:px-6 md:px-8 lg:px-12 xl:px-14 2xl:px-20 pb-6 sm:pb-8 md:pb-12 lg:pb-16 xl:pb-16 2xl:pb-24">
         <p
           ref={descRef}
-          className="absolute top-12 sm:top-16 md:top-24 lg:top-32 xl:top-40 2xl:top-48 max-w-full sm:max-w-sm md:max-w-md lg:max-w-xl xl:max-w-2xl text-left leading-snug text-black/40 text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl 2xl:text-[1.75rem] lg:leading-tight xl:leading-tight font-semibold tracking-tight px-2 sm:px-0"
+          className="absolute top-12 sm:top-16 md:top-24 lg:top-28 xl:top-32 2xl:top-48 max-w-full sm:max-w-sm md:max-w-md lg:max-w-xl xl:max-w-xl 2xl:max-w-2xl text-left leading-snug text-black/40 text-sm sm:text-base md:text-lg lg:text-xl xl:text-xl 2xl:text-[1.75rem] lg:leading-tight xl:leading-tight font-semibold tracking-tight px-2 sm:px-0"
           style={{ opacity: 0 }}
         >
           Track flights, airlines, and destinations in real time. Clear, fast air traffic data built for aviation enthusiasts and operators.
         </p>
         <h1
           ref={titleRef}
-          className="absolute top-[30%] sm:top-[35%] md:top-[40%] lg:top-[45%] xl:top-[48%] text-[clamp(2rem,10vw,18rem)] sm:text-[clamp(2.5rem,11vw,22rem)] md:text-[clamp(3rem,12vw,26rem)] lg:text-[clamp(3.5rem,13vw,28rem)] xl:text-[clamp(4rem,14vw,32rem)] font-black leading-[0.85] tracking-tighter text-black"
+          className="absolute top-[30%] sm:top-[35%] md:top-[40%] lg:top-[42%] xl:top-[42%] 2xl:top-[48%] text-[clamp(2rem,10vw,18rem)] sm:text-[clamp(2.5rem,11vw,22rem)] md:text-[clamp(3rem,12vw,26rem)] lg:text-[clamp(3.5rem,13vw,28rem)] xl:text-[clamp(3.5rem,12vw,26rem)] 2xl:text-[clamp(4rem,14vw,32rem)] font-black leading-[0.85] tracking-tighter text-black"
           style={{ cursor: 'default', opacity: 0 }}
         >
           SKYABOVE
@@ -95,7 +95,7 @@ export default function Home() {
         </div>
       </section>
       <FlightDashboard />
-      <footer className="px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20 py-4 text-center">
+      <footer className="px-4 sm:px-6 md:px-8 lg:px-12 xl:px-14 2xl:px-20 py-4 text-center">
         <p className={labelClass}>
           &copy; 2026 Developed and designed by Mario Hernandez
         </p>
