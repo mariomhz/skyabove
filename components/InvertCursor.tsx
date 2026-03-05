@@ -110,6 +110,7 @@ export default function InvertCursor({ targetRef }: { targetRef: React.RefObject
           width: '300px',
           height: '300px',
           backgroundColor: 'white',
+          borderRadius: '50%',
           marginLeft: '-150px',
           marginTop: '-150px',
         }}

@@ -4,7 +4,9 @@ import { useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import InvertCursor from '@/components/InvertCursor';
 import FlightDashboard from '@/components/FlightDashboard';
-import { labelClass } from '@/lib/styles';
+import LoadingScreen from '@/components/LoadingScreen';
+import HeroWaypoints from '@/components/HeroWaypoints';
+import { labelClass, labelClassDark } from '@/lib/styles';
 
 export default function Home() {
   const titleRef = useRef<HTMLHeadingElement>(null);
@@ -55,8 +57,10 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-white">
+      <LoadingScreen />
       <InvertCursor targetRef={titleRef} />
       <section aria-label="Hero" className="relative flex min-h-screen flex-col items-center justify-end px-4 sm:px-6 md:px-8 lg:px-12 xl:px-14 2xl:px-20 pb-6 sm:pb-8 md:pb-12 lg:pb-16 xl:pb-16 2xl:pb-24">
+        <HeroWaypoints />
         <p
           ref={descRef}
           className="absolute top-12 sm:top-16 md:top-24 lg:top-28 xl:top-32 2xl:top-48 max-w-full sm:max-w-sm md:max-w-md lg:max-w-xl xl:max-w-xl 2xl:max-w-2xl text-left leading-snug text-black/40 text-sm sm:text-base md:text-lg lg:text-xl xl:text-xl 2xl:text-[1.75rem] lg:leading-tight xl:leading-tight font-semibold tracking-tight px-2 sm:px-0"
@@ -95,10 +99,24 @@ export default function Home() {
         </div>
       </section>
       <FlightDashboard />
-      <footer className="px-4 sm:px-6 md:px-8 lg:px-12 xl:px-14 2xl:px-20 py-4 text-center">
-        <p className={labelClass}>
+      <footer className="bg-black px-4 sm:px-6 md:px-8 lg:px-12 xl:px-14 2xl:px-20 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+        <p className={labelClassDark}>
           &copy; 2026 Developed and designed by Mario Hernandez
         </p>
+        <div className="flex gap-4">
+          <a
+            href="#"
+            className={`${labelClassDark} transition-colors duration-200 hover:text-white/60`}
+          >
+            GITHUB
+          </a>
+          <a
+            href="#"
+            className={`${labelClassDark} transition-colors duration-200 hover:text-white/60`}
+          >
+            LINKEDIN
+          </a>
+        </div>
       </footer>
     </main>
   );

@@ -4,7 +4,8 @@ import { useEffect, useState, useRef, memo } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import type { DashboardStats } from '@/lib/aviationstack';
-import { labelClassSm as labelClass } from '@/lib/styles';
+import { labelClassSmDark as labelClass } from '@/lib/styles';
+import UtcClock from '@/components/UtcClock';
 
 const POLL_INTERVAL = 5 * 60 * 1000;
 const MAX_RETRIES = 3;
@@ -229,7 +230,7 @@ export default function FlightDashboard() {
     <section
       ref={sectionRef}
       aria-label="Live flight statistics"
-      className="min-h-screen flex flex-col justify-center px-4 sm:px-6 md:px-8 lg:px-12 xl:px-14 2xl:px-20 py-6 sm:py-8 md:py-12 lg:py-16 xl:py-16 2xl:py-24"
+      className="bg-black min-h-screen flex flex-col justify-center px-4 sm:px-6 md:px-8 lg:px-12 xl:px-14 2xl:px-20 py-6 sm:py-8 md:py-12 lg:py-16 xl:py-16 2xl:py-24"
     >
       {error && (
         <div role="status" className={labelClass + ' mb-4 sm:mb-6'}>
@@ -239,8 +240,9 @@ export default function FlightDashboard() {
       )}
 
       {stats && (
-        <div className={labelClass + ' mb-6 sm:mb-8'}>
-          LAST UPDATED {formatTime(stats.fetchedAt)}
+        <div className={labelClass + ' mb-6 sm:mb-8 flex flex-wrap items-baseline gap-x-4 gap-y-1'}>
+          <span>LAST UPDATED {formatTime(stats.fetchedAt)}</span>
+          <span><UtcClock /></span>
         </div>
       )}
 
@@ -259,12 +261,12 @@ export default function FlightDashboard() {
               </span>
               <FlipValue
                 value={row.value}
-                className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-2xl 2xl:text-4xl font-black text-black tracking-tight tabular-nums"
+                className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-2xl 2xl:text-4xl font-black text-white tracking-tight tabular-nums"
               />
             </div>,
             <div
               key={`sep-${i}`}
-              style={{ border: 'none', borderTop: '1px solid', borderImage: 'linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%) 1' }}
+              style={{ border: 'none', borderTop: '1px solid', borderImage: 'linear-gradient(to right, transparent 0%, white 15%, white 85%, transparent 100%) 1' }}
             />,
           ])
         : Array.from({ length: 10 }).flatMap((_, i) => [
@@ -272,19 +274,19 @@ export default function FlightDashboard() {
               key={i}
               className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 sm:gap-3 py-1"
             >
-              <div className="h-3 w-32 sm:w-36 bg-black/[0.06] rounded animate-pulse" />
-              <div className="h-6 sm:h-8 md:h-10 lg:h-12 xl:h-14 2xl:h-16 w-24 sm:w-28 md:w-36 lg:w-44 xl:w-52 bg-black/[0.06] rounded animate-pulse" />
+              <div className="h-3 w-32 sm:w-36 bg-white/[0.06] rounded animate-pulse" />
+              <div className="h-6 sm:h-8 md:h-10 lg:h-12 xl:h-14 2xl:h-16 w-24 sm:w-28 md:w-36 lg:w-44 xl:w-52 bg-white/[0.06] rounded animate-pulse" />
             </div>,
             <div
               key={`sep-${i}`}
-              style={{ border: 'none', borderTop: '1px solid', borderImage: 'linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%) 1' }}
+              style={{ border: 'none', borderTop: '1px solid', borderImage: 'linear-gradient(to right, transparent 0%, white 15%, white 85%, transparent 100%) 1' }}
             />,
           ])}
 
     </section>
 
-    <section className="flex flex-col md:flex-row justify-center md:justify-end px-4 sm:px-6 md:px-8 lg:px-12 xl:px-14 2xl:px-20 py-4">
-      <p className="max-w-sm md:max-w-md lg:max-w-lg text-center md:text-right text-[11px] sm:text-xs md:text-sm leading-relaxed uppercase tracking-[0.2em] text-black/25 font-medium">
+    <section className="bg-black flex flex-col md:flex-row justify-center md:justify-end px-4 sm:px-6 md:px-8 lg:px-12 xl:px-14 2xl:px-20 py-4">
+      <p className="max-w-sm md:max-w-md lg:max-w-lg text-center md:text-right text-[11px] sm:text-xs md:text-sm leading-relaxed uppercase tracking-[0.2em] text-white/25 font-medium">
         This site is a personal demo showcasing my frontend and backend skills.
         Flight data is provided by AviationStack&apos;s free tier, so metrics
         are sampled and may refresh infrequently due to API rate limits.

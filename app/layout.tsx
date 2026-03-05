@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import SmoothScroll from "@/components/SmoothScroll";
 import "./globals.css";
 
 const inter = Inter({
@@ -9,8 +10,25 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "SKYABOVE - Flight Dashboard",
-  description: "Metro-style flight tracking dashboard for LAX",
+  metadataBase: new URL("https://skyabove-dashboard.vercel.app"),
+  title: "SKYABOVE — Real-Time Flight Dashboard",
+  description:
+    "Live aviation metrics, airline rankings, and delay tracking — built with Next.js, GSAP, and the AviationStack API.",
+  openGraph: {
+    title: "SKYABOVE — Real-Time Flight Dashboard",
+    description:
+      "Live aviation metrics, airline rankings, and delay tracking — built with Next.js, GSAP, and the AviationStack API.",
+    url: "https://skyabove-dashboard.vercel.app",
+    siteName: "SKYABOVE",
+    type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "SKYABOVE — Real-Time Flight Dashboard",
+    description:
+      "Live aviation metrics, airline rankings, and delay tracking.",
+  },
 };
 
 export default function RootLayout({
@@ -21,7 +39,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} antialiased`}>
-        {children}
+        <SmoothScroll>{children}</SmoothScroll>
       </body>
     </html>
   );

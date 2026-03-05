@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx next build:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(npx vercel:*)",
+      "Bash(curl:*)",
+      "WebFetch(domain:opensky-network.org)",
+      "Bash(git push:*)",
+      "Bash(vercel ls:*)"
+    ]
+  }
+}
