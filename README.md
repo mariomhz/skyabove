@@ -1,6 +1,6 @@
 # SKYABOVE
 
-Live flight statistics dashboard built with Next.js. Computes real-time metrics from every aircraft currently tracked by the [OpenSky Network](https://opensky-network.org) ADS-B feed, with animated flip-clock transitions.
+Live flight tracking dashboard built with Next.js. Plots every aircraft currently tracked by the [OpenSky Network](https://opensky-network.org) ADS-B feed on an interactive 3D globe and computes real-time statistics from the full snapshot, with animated flip-clock transitions.
 
 ## Stack
 
@@ -9,9 +9,15 @@ Live flight statistics dashboard built with Next.js. Computes real-time metrics 
 - TypeScript 5
 - Tailwind CSS 4
 - GSAP with ScrollTrigger
+- MapLibre GL (globe projection) with Natural Earth boundaries from `world-atlas`
 
 ## Features
 
+- Interactive 3D globe showing ~12,000 live aircraft, each rotated to its heading and faded by altitude
+- Aircraft keep moving between data refreshes via great-circle dead reckoning from speed and heading
+- Click any aircraft for callsign, airline, altitude, speed, heading, vertical rate, squawk, and a link to its live track
+- Shareable deep links (`/?aircraft=<icao24>`) fly straight to a specific aircraft
+- Map library and boundary data load only when the globe nears the viewport; position updates scale with zoom and pause off-screen
 - Stats computed from the full global snapshot (~10,000+ airborne aircraft), not a sample: airborne vs. on-ground counts, top airlines, top registration countries, highest and fastest aircraft, average cruise altitude and ground speed, climb/descent counts, active emergency squawks
 - Airline names decoded from ICAO callsign prefixes
 - Transponder glitches filtered out of altitude and speed records
@@ -19,7 +25,7 @@ Live flight statistics dashboard built with Next.js. Computes real-time metrics 
 - Scroll-triggered staggered entrance animations
 - Skeleton loading states during data fetch
 - Invert cursor effect on the hero title
-- Shared server-side cache sized to the OpenSky credit budget, serving the last good snapshot if a refresh fails
+- One shared server-side snapshot feeds both the globe and the stats, sized to the OpenSky credit budget and serving the last good data if a refresh fails
 - Responsive layout for mobile and desktop
 
 ## Setup
@@ -42,6 +48,6 @@ The project is deployed on Vercel. Set the optional `OPENSKY_CLIENT_ID` and `OPE
 
 ## Notes
 
-A global OpenSky query costs 4 API credits. Anonymous access allows 400 credits per day, so the server refreshes the snapshot every 15 minutes; with API credentials (4,000 credits per day) it refreshes every 2 minutes. Clients poll the cached endpoint every minute, which never costs extra credits.
+A global OpenSky query costs 4 API credits. Anonymous access allows 400 credits per day, so the server refreshes the snapshot every 15 minutes; with API credentials (4,000 credits per day) it refreshes every 2 minutes. Clients poll the cached endpoints every minute, which never costs extra credits.
 
 ADS-B coverage depends on volunteer receivers, so oceans and remote regions are underrepresented.

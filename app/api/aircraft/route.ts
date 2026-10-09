@@ -1,16 +1,13 @@
 import { NextResponse } from "next/server";
-import { getSnapshot, cacheHeaders, REFRESH_SECONDS } from "@/lib/snapshot";
+import { getSnapshot, cacheHeaders } from "@/lib/snapshot";
 
 export const preferredRegion = "fra1";
 export const maxDuration = 30;
 
 export async function GET() {
   try {
-    const { stats } = await getSnapshot();
-    return NextResponse.json(
-      { stats, refreshSeconds: REFRESH_SECONDS },
-      { headers: cacheHeaders }
-    );
+    const { positions } = await getSnapshot();
+    return NextResponse.json(positions, { headers: cacheHeaders });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 502 });

@@ -6,6 +6,7 @@ import InvertCursor from '@/components/InvertCursor';
 import FlightDashboard from '@/components/FlightDashboard';
 import LoadingScreen from '@/components/LoadingScreen';
 import HeroWaypoints from '@/components/HeroWaypoints';
+import LiveGlobe from '@/components/LiveGlobe';
 import { labelClass, labelClassDark } from '@/lib/styles';
 
 export default function Home() {
@@ -15,7 +16,8 @@ export default function Home() {
   const scrollHintRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    // Deep links to an aircraft scroll to the globe instead
+    if (!new URLSearchParams(window.location.search).has('aircraft')) window.scrollTo(0, 0);
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) {
@@ -98,6 +100,7 @@ export default function Home() {
           </svg>
         </div>
       </section>
+      <LiveGlobe />
       <FlightDashboard />
       <footer className="bg-black px-4 sm:px-6 md:px-8 lg:px-12 xl:px-14 2xl:px-20 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
         <p className={labelClassDark}>

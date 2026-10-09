@@ -80,7 +80,8 @@ function FlipValue({ value, className }: { value: string; className?: string }) 
   return (
     <span className={`inline-flex ${className ?? ''}`}>
       {value.split('').map((char, i) => (
-        <FlipChar key={i} char={char} />
+        // A lone space inside an inline-block collapses to zero width
+        <FlipChar key={i} char={char === ' ' ? '\u00A0' : char} />
       ))}
     </span>
   );
