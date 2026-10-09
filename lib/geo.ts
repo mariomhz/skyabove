@@ -58,7 +58,7 @@ function fixRing(ring: Position[]): Position[] {
 
 /**
  * Natural Earth polygons cross the antimeridian with a ±360° jump, which planar
- * renderers draw as a band around the whole globe. Unwraps them so they render
+ * renderers draw as a band around the whole world. Unwraps them so they render
  * as the actual shapes.
  */
 export function fixAntimeridian<T extends GeoJSON.Feature | GeoJSON.FeatureCollection>(geo: T): T {

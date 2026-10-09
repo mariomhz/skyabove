@@ -1,6 +1,6 @@
 # SKYABOVE
 
-Live flight tracking dashboard built with Next.js. Plots every aircraft currently tracked by the [OpenSky Network](https://opensky-network.org) ADS-B feed on an interactive 3D globe and computes real-time statistics from the full snapshot, with animated flip-clock transitions.
+Live flight tracking dashboard built with Next.js. Plots every aircraft currently tracked by the [OpenSky Network](https://opensky-network.org) ADS-B feed on an interactive full-bleed world map and computes real-time statistics from the full snapshot, with animated flip-clock transitions.
 
 ## Stack
 
@@ -9,15 +9,15 @@ Live flight tracking dashboard built with Next.js. Plots every aircraft currentl
 - TypeScript 5
 - Tailwind CSS 4
 - GSAP with ScrollTrigger
-- MapLibre GL (globe projection) with Natural Earth boundaries from `world-atlas`
+- MapLibre GL with Natural Earth boundaries from `world-atlas`
 
 ## Features
 
-- Interactive 3D globe showing ~12,000 live aircraft, each rotated to its heading and faded by altitude
+- Interactive world map showing ~12,000 live aircraft, each rotated to its heading and faded by altitude
 - Aircraft keep moving between data refreshes via great-circle dead reckoning from speed and heading
 - Click any aircraft for callsign, airline, altitude, speed, heading, vertical rate, squawk, and a link to its live track
 - Shareable deep links (`/?aircraft=<icao24>`) fly straight to a specific aircraft
-- Map library and boundary data load only when the globe nears the viewport; position updates scale with zoom and pause off-screen
+- Map library and boundary data load only when the map nears the viewport; position updates scale with zoom and pause off-screen
 - Stats computed from the full global snapshot (~10,000+ airborne aircraft), not a sample: airborne vs. on-ground counts, top airlines, top registration countries, highest and fastest aircraft, average cruise altitude and ground speed, climb/descent counts, active emergency squawks
 - Airline names decoded from ICAO callsign prefixes
 - Transponder glitches filtered out of altitude and speed records
@@ -25,7 +25,7 @@ Live flight tracking dashboard built with Next.js. Plots every aircraft currentl
 - Scroll-triggered staggered entrance animations
 - Skeleton loading states during data fetch
 - Invert cursor effect on the hero title
-- One shared server-side snapshot feeds both the globe and the stats, sized to the OpenSky credit budget and serving the last good data if a refresh fails
+- One shared server-side snapshot feeds both the map and the stats, sized to the OpenSky credit budget and serving the last good data if a refresh fails
 - Responsive layout for mobile and desktop
 
 ## Setup

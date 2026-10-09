@@ -8,7 +8,7 @@ import {
 } from "@/lib/opensky";
 
 /*
-  One OpenSky fetch per refresh window feeds both the stats and the globe.
+  One OpenSky fetch per refresh window feeds both the stats and the live map.
   Refresh interval is sized to the credit budget (4 credits per global call):
   authenticated 4,000/day → every 2 min uses at most 2,880; anonymous 400/day →
   every 15 min uses at most 384. The cache is shared across serverless instances

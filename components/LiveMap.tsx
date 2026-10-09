@@ -4,10 +4,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import type { AircraftSnapshot } from '@/lib/snapshot';
 import { usePrefersReducedMotion } from '@/lib/useMediaQuery';
-import { labelClassSmDark } from '@/lib/styles';
+import { labelClassSm } from '@/lib/styles';
 import AircraftPanel from '@/components/AircraftPanel';
 
-const GlobeMap = dynamic(() => import('@/components/GlobeMap'), { ssr: false });
+const FlightMap = dynamic(() => import('@/components/FlightMap'), { ssr: false });
 
 const POLL_INTERVAL = 60 * 1000;
 const URL_PARAM = 'aircraft';
@@ -20,7 +20,7 @@ function formatUtc(unixSeconds: number) {
   });
 }
 
-export default function LiveGlobe() {
+export default function LiveMap() {
   const sectionRef = useRef<HTMLElement>(null);
   const [near, setNear] = useState(false);
   const [snapshot, setSnapshot] = useState<AircraftSnapshot | null>(null);
@@ -98,10 +98,10 @@ export default function LiveGlobe() {
     <section
       ref={sectionRef}
       aria-label="Live map of aircraft worldwide"
-      className="relative h-svh bg-black overflow-hidden"
+      className="relative h-svh bg-white overflow-hidden"
     >
       {near && (
-        <GlobeMap
+        <FlightMap
           snapshot={snapshot}
           selected={selected}
           onSelect={select}
@@ -112,10 +112,10 @@ export default function LiveGlobe() {
       )}
 
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex flex-col gap-1 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-14 2xl:px-20 pt-6 sm:pt-8 md:pt-12">
-        <h2 className="text-white font-black tracking-tight text-3xl sm:text-4xl md:text-5xl lg:text-6xl">
+        <h2 className="text-black font-black tracking-tight text-3xl sm:text-4xl md:text-5xl lg:text-6xl">
           LIVE AIRSPACE
         </h2>
-        <p className={labelClassSmDark} role="status">
+        <p className={labelClassSm} role="status">
           {error && !snapshot
             ? 'LIVE DATA UNAVAILABLE'
             : snapshot
@@ -125,9 +125,9 @@ export default function LiveGlobe() {
       </div>
 
       <p
-        className={`${labelClassSmDark} pointer-events-none absolute z-10 bottom-4 sm:bottom-6 md:bottom-8 left-4 sm:left-6 md:left-8 lg:left-12 xl:left-14 2xl:left-20 hidden sm:block`}
+        className={`${labelClassSm} pointer-events-none absolute z-10 bottom-4 sm:bottom-6 md:bottom-8 left-4 sm:left-6 md:left-8 lg:left-12 xl:left-14 2xl:left-20 hidden sm:block`}
       >
-        Drag to rotate · Ctrl + scroll to zoom · Click a plane
+        Drag to pan · Ctrl + scroll to zoom · Click a plane
       </p>
 
       {selectedAircraft && snapshot && (

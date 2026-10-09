@@ -19,7 +19,7 @@ const PLANE_ICON_D =
 
 /*
   Rebuilding ~12k positions costs ~50ms of main-thread work, so tick only as often
-  as the movement is visible: at globe zoom a cruising jet moves under a pixel per
+  as the movement is visible: at world zoom a cruising jet moves under a pixel per
   minute, while zoomed in it moves a pixel every second or two.
 */
 function tickInterval(zoom: number) {
@@ -29,8 +29,9 @@ function tickInterval(zoom: number) {
 }
 // Beyond this, extrapolated positions drift too far from reality to be useful
 const MAX_EXTRAPOLATION_S = 10 * 60;
-const SPIN_DEG_PER_SECOND = 2;
 const SELECTED_ZOOM = 4;
+// Frames the populated latitudes rather than the poles
+const INITIAL_CENTER: [number, number] = [-20, 30];
 
 type AircraftProps = { i: string; h: number; a: number };
 
@@ -38,19 +39,24 @@ type SymbolPaint = NonNullable<
   Extract<StyleSpecification['layers'][number], { type: 'symbol' }>['paint']
 >;
 type Opacity = SymbolPaint['icon-opacity'];
+/** The expression-array form of a style value, as opposed to a constant or legacy function */
+type Expression = Extract<NonNullable<Opacity>, unknown[]>;
 
-// Low and slow traffic fades back; cruising jets read brightest
-const ALTITUDE_OPACITY: Opacity = ['interpolate', ['linear'], ['get', 'a'], 0, 0.35, 30000, 0.95];
+// Below this zoom traffic is drawn as fine dots; plane icons would merge into blobs
+const ICON_MIN_ZOOM = 3;
+
+const byAltitude = (low: number, cruise: number): Expression => [
+  'interpolate', ['linear'], ['get', 'a'], 0, low, 30000, cruise,
+];
+
+// Low and slow traffic fades back; cruising jets read darkest
+const ICON_OPACITY = byAltitude(0.3, 0.9);
+const DOT_OPACITY = byAltitude(0.3, 0.8);
 
 /** Dims everything except the selected aircraft. */
-function aircraftOpacity(selected: string | null): Opacity {
-  if (!selected) return ALTITUDE_OPACITY;
-  return [
-    'case',
-    ['==', ['get', 'i'], selected],
-    1,
-    ['interpolate', ['linear'], ['get', 'a'], 0, 0.1, 30000, 0.3],
-  ];
+function withSelection(base: Opacity, selected: string | null): Opacity {
+  if (!selected) return base;
+  return ['case', ['==', ['get', 'i'], selected], 1, byAltitude(0.06, 0.18)];
 }
 
 const EMPTY: FeatureCollection<Point, AircraftProps> = { type: 'FeatureCollection', features: [] };
@@ -61,15 +67,18 @@ function planeImage(pixelRatio: number) {
   canvas.width = canvas.height = size;
   const ctx = canvas.getContext('2d')!;
   ctx.scale(pixelRatio, pixelRatio);
-  ctx.fillStyle = '#fff';
+  ctx.fillStyle = '#000';
   ctx.fill(new Path2D(PLANE_ICON_D));
   return ctx.getImageData(0, 0, size, size);
 }
 
-/** Zoom at which the globe fills ~85% of the shorter side of the viewport. */
-function fitZoom(el: HTMLElement) {
-  const radiusPx = 0.425 * Math.min(el.clientWidth, el.clientHeight);
-  return Math.log2((radiusPx * 2 * Math.PI) / 512);
+/**
+ * Smallest zoom at which the (square) Mercator world covers the container. On
+ * tall screens it zooms further so the poles are cropped rather than the map
+ * shrinking to show Antarctica.
+ */
+function coverZoom(el: HTMLElement) {
+  return Math.log2(Math.max(el.clientWidth, el.clientHeight * 1.5) / 512);
 }
 
 const elapsedSince = (snapshot: AircraftSnapshot, now: number) =>
@@ -95,32 +104,26 @@ function toFeatures(snapshot: AircraftSnapshot, now: number) {
 
 function highlight(map: MapLibreMap, selected: string | null) {
   map.setFilter('selected-ring', ['==', ['get', 'i'], selected ?? '']);
-  map.setPaintProperty('aircraft', 'icon-opacity', aircraftOpacity(selected));
+  map.setPaintProperty('aircraft', 'icon-opacity', withSelection(ICON_OPACITY, selected));
+  map.setPaintProperty('aircraft-dots', 'circle-opacity', withSelection(DOT_OPACITY, selected));
 }
 
 function baseStyle(): StyleSpecification {
   return {
     version: 8,
-    projection: { type: 'globe' },
-    sky: {
-      'sky-color': '#000000',
-      'horizon-color': '#1a1a1a',
-      'fog-color': '#000000',
-      'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 0.5, 5, 0.2, 7, 0],
-    },
     sources: {
       land: { type: 'geojson', data: EMPTY },
       borders: { type: 'geojson', data: EMPTY },
       aircraft: { type: 'geojson', data: EMPTY },
     },
     layers: [
-      { id: 'ocean', type: 'background', paint: { 'background-color': '#060606' } },
-      { id: 'land', type: 'fill', source: 'land', paint: { 'fill-color': '#161616' } },
+      { id: 'ocean', type: 'background', paint: { 'background-color': '#ffffff' } },
+      { id: 'land', type: 'fill', source: 'land', paint: { 'fill-color': '#ececec' } },
       {
         id: 'borders',
         type: 'line',
         source: 'borders',
-        paint: { 'line-color': '#ffffff', 'line-opacity': 0.07, 'line-width': 0.6 },
+        paint: { 'line-color': '#000000', 'line-opacity': 0.08, 'line-width': 0.6 },
       },
       {
         id: 'selected-ring',
@@ -130,26 +133,38 @@ function baseStyle(): StyleSpecification {
         paint: {
           'circle-radius': 16,
           'circle-color': 'transparent',
-          'circle-stroke-color': '#ffffff',
+          'circle-stroke-color': '#000000',
           'circle-stroke-width': 1.5,
           'circle-stroke-opacity': 0.9,
           'circle-pitch-alignment': 'map',
         },
       },
       {
+        id: 'aircraft-dots',
+        type: 'circle',
+        source: 'aircraft',
+        maxzoom: ICON_MIN_ZOOM,
+        paint: {
+          'circle-radius': ['interpolate', ['linear'], ['zoom'], 1, 1.3, ICON_MIN_ZOOM, 2],
+          'circle-color': '#000000',
+          'circle-opacity': DOT_OPACITY,
+        },
+      },
+      {
         id: 'aircraft',
         type: 'symbol',
         source: 'aircraft',
+        minzoom: ICON_MIN_ZOOM,
         layout: {
           'icon-image': 'plane',
-          'icon-size': ['interpolate', ['linear'], ['zoom'], 1, 0.32, 4, 0.55, 8, 0.85],
+          'icon-size': ['interpolate', ['linear'], ['zoom'], ICON_MIN_ZOOM, 0.45, 8, 0.85],
           'icon-rotate': ['get', 'h'],
           'icon-rotation-alignment': 'map',
           'icon-pitch-alignment': 'map',
           'icon-allow-overlap': true,
           'icon-ignore-placement': true,
         },
-        paint: { 'icon-opacity': ALTITUDE_OPACITY },
+        paint: { 'icon-opacity': ICON_OPACITY },
       },
       {
         // Invisible, larger hit area so small planes are easy to click and tap
@@ -162,7 +177,7 @@ function baseStyle(): StyleSpecification {
   };
 }
 
-interface GlobeMapProps {
+interface FlightMapProps {
   snapshot: AircraftSnapshot | null;
   selected: string | null;
   onSelect: (icao: string | null) => void;
@@ -172,22 +187,20 @@ interface GlobeMapProps {
   onFlown: () => void;
 }
 
-export default function GlobeMap({
+export default function FlightMap({
   snapshot,
   selected,
   onSelect,
   reducedMotion,
   flyToSelected,
   onFlown,
-}: GlobeMapProps) {
+}: FlightMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const loadedRef = useRef(false);
   const snapshotRef = useRef(snapshot);
   const onSelectRef = useRef(onSelect);
   const selectedRef = useRef(selected);
-  // Idle spin runs until the first interaction or deep-link flight
-  const spinningRef = useRef(true);
 
   useEffect(() => {
     snapshotRef.current = snapshot;
@@ -203,29 +216,19 @@ export default function GlobeMap({
     const map = new MapLibreMap({
       container,
       style: baseStyle(),
-      center: [-30, 30],
-      zoom: fitZoom(container),
-      minZoom: 0.5,
+      center: INITIAL_CENTER,
+      zoom: coverZoom(container),
+      minZoom: coverZoom(container),
       maxZoom: 10,
       attributionControl: false,
       cooperativeGestures: true,
-      renderWorldCopies: false,
     });
     mapRef.current = map;
 
     let disposed = false;
 
-    const spin = () => {
-      if (reducedMotion || !spinningRef.current || disposed || map.getZoom() > 3) return;
-      const center = map.getCenter();
-      center.lng -= SPIN_DEG_PER_SECOND;
-      map.easeTo({ center, duration: 1000, easing: (t) => t });
-    };
-
-    const stopSpin = () => {
-      spinningRef.current = false;
-      map.stop();
-    };
+    // Never let the map zoom out past the point where it leaves blank space
+    map.on('resize', () => map.setMinZoom(coverZoom(container)));
 
     map.on('load', async () => {
       map.addImage('plane', planeImage(2), { pixelRatio: 2 });
@@ -251,13 +254,7 @@ export default function GlobeMap({
           toFeatures(snapshotRef.current, Date.now())
         );
       }
-      spin();
     });
-
-    map.on('moveend', spin);
-    map.on('mousedown', stopSpin);
-    map.on('touchstart', stopSpin);
-    map.on('wheel', stopSpin);
 
     map.on('click', 'aircraft-hit', (e) => {
       const icao = e.features?.[0]?.properties?.i as string | undefined;
@@ -280,9 +277,9 @@ export default function GlobeMap({
       map.remove();
       mapRef.current = null;
     };
-  }, [reducedMotion]);
+  }, []);
 
-  /* ── Advance every aircraft along its heading, only while the globe is on screen ── */
+  /* ── Advance every aircraft along its heading, only while the map is on screen ── */
   useEffect(() => {
     if (!snapshot) return;
     let onScreen = true;
@@ -326,9 +323,6 @@ export default function GlobeMap({
     const map = mapRef.current;
     const plane = snapshot.aircraft.find((a) => a[0] === selected);
     if (!map || !plane) return;
-    // Stop the spin first, or its next easeTo would cancel the flight midway
-    spinningRef.current = false;
-    map.stop();
     const [, , , lat, lng, , heading, speed] = plane;
     const center =
       heading != null && speed
