@@ -1,6 +1,6 @@
 # SKYABOVE
 
-Live flight statistics dashboard built with Next.js. Displays real-time aviation metrics from the AviationStack API with animated flip-clock transitions.
+Live flight statistics dashboard built with Next.js. Computes real-time metrics from every aircraft currently tracked by the [OpenSky Network](https://opensky-network.org) ADS-B feed, with animated flip-clock transitions.
 
 ## Stack
 
@@ -12,36 +12,36 @@ Live flight statistics dashboard built with Next.js. Displays real-time aviation
 
 ## Features
 
-- Live flight statistics (airborne flights, top airlines, busiest airports, delays, etc.)
+- Stats computed from the full global snapshot (~10,000+ airborne aircraft), not a sample: airborne vs. on-ground counts, top airlines, top registration countries, highest and fastest aircraft, average cruise altitude and ground speed, climb/descent counts, active emergency squawks
+- Airline names decoded from ICAO callsign prefixes
+- Transponder glitches filtered out of altitude and speed records
 - Per-character flip animations on value changes
 - Scroll-triggered staggered entrance animations
 - Skeleton loading states during data fetch
 - Invert cursor effect on the hero title
-- Server-side API caching with stale-while-revalidate fallback
+- Shared server-side cache sized to the OpenSky credit budget, serving the last good snapshot if a refresh fails
 - Responsive layout for mobile and desktop
 
 ## Setup
 
 ```
 npm install
-```
-
-Create a `.env.local` file with your AviationStack API key:
-
-```
-AVIATIONSTACK_API_KEY=your_key_here
-```
-
-Run the development server:
-
-```
 npm run dev
+```
+
+The app works without any configuration using anonymous OpenSky access. For fresher data, create a free OpenSky account, add an API client under your account page, and put its credentials in `.env.local`:
+
+```
+OPENSKY_CLIENT_ID=your_client_id
+OPENSKY_CLIENT_SECRET=your_client_secret
 ```
 
 ## Deployment
 
-The project is deployed on Vercel. Set the `AVIATIONSTACK_API_KEY` environment variable in your Vercel project settings before deploying.
+The project is deployed on Vercel. Set the optional `OPENSKY_CLIENT_ID` and `OPENSKY_CLIENT_SECRET` environment variables in your Vercel project settings.
 
 ## Notes
 
-The AviationStack free plan allows approximately 100 API requests per month. The server caches responses for 30 minutes and the client polls every 5 minutes to stay within this budget.
+A global OpenSky query costs 4 API credits. Anonymous access allows 400 credits per day, so the server refreshes the snapshot every 15 minutes; with API credentials (4,000 credits per day) it refreshes every 2 minutes. Clients poll the cached endpoint every minute, which never costs extra credits.
+
+ADS-B coverage depends on volunteer receivers, so oceans and remote regions are underrepresented.

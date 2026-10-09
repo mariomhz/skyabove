@@ -3,24 +3,21 @@
 import { useEffect, useState, useRef, memo } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import type { DashboardStats } from '@/lib/aviationstack';
+import type { DashboardStats } from '@/lib/opensky';
 import { labelClassSmDark as labelClass } from '@/lib/styles';
 import UtcClock from '@/components/UtcClock';
 import { usePrefersReducedMotion } from '@/lib/useMediaQuery';
 
-const POLL_INTERVAL = 5 * 60 * 1000;
+const POLL_INTERVAL = 60 * 1000;
 const MAX_RETRIES = 3;
 const FLIP_DURATION = 0.7;
 const FLIP_STAGGER = 0.15;
-const FLIP_CLEANUP_DELAY = FLIP_DURATION + FLIP_STAGGER + 100;
+const FLIP_CLEANUP_DELAY = (FLIP_DURATION + FLIP_STAGGER) * 1000 + 100;
 const ENTRANCE_DURATION = 0.7;
 const ENTRANCE_STAGGER = 0.08;
 
 interface FlightsApiResponse {
   stats?: DashboardStats;
-  cached?: boolean;
-  stale?: boolean;
-  cacheAge?: number;
   error?: string;
 }
 
@@ -89,66 +86,41 @@ function FlipValue({ value, className }: { value: string; className?: string }) 
   );
 }
 
+const fmt = (n: number) => n.toLocaleString('en-US');
+
 function buildRows(stats: DashboardStats) {
-  const rows = [
-    { label: 'AIRBORNE WORLDWIDE', value: stats.totalFlights.toLocaleString() },
+  const { emergencies } = stats;
+  return [
+    { label: 'AIRBORNE WORLDWIDE', value: fmt(stats.airborne) },
+    { label: 'ON THE GROUND', value: fmt(stats.onGround) },
     { label: 'TOP AIRLINE', value: stats.topAirlines[0]?.name.toUpperCase() ?? '—' },
+    { label: 'TOP REGISTRATION', value: stats.topCountries[0]?.name.toUpperCase() ?? '—' },
     {
-      label: 'BUSIEST DEPARTURE',
-      value: stats.busiestDepartures[0]
-        ? `${stats.busiestDepartures[0].iata}`
+      label: 'HIGHEST AIRCRAFT',
+      value: stats.highestAltitude
+        ? `${stats.highestAltitude.callsign} — ${fmt(stats.highestAltitude.feet)} FT`
         : '—',
     },
     {
-      label: 'BUSIEST ARRIVAL',
-      value: stats.busiestArrivals[0]
-        ? `${stats.busiestArrivals[0].iata}`
-        : '—',
+      label: 'FASTEST AIRCRAFT',
+      value: stats.fastest ? `${stats.fastest.callsign} — ${fmt(stats.fastest.knots)} KT` : '—',
     },
     {
-      label: 'AVG DEPARTURE DELAY',
-      value: stats.avgDepartureDelay > 0 ? `${stats.avgDepartureDelay} MIN` : 'ON TIME',
+      label: 'AVG CRUISE ALTITUDE',
+      value: stats.avgCruiseAltitude != null ? `${fmt(stats.avgCruiseAltitude)} FT` : '—',
     },
     {
-      label: 'MOST DELAYED FLIGHT',
-      value: stats.mostDelayedFlight
-        ? `${stats.mostDelayedFlight.iata} — ${stats.mostDelayedFlight.delay} MIN`
-        : '—',
+      label: 'AVG GROUND SPEED',
+      value: stats.avgGroundSpeed != null ? `${fmt(stats.avgGroundSpeed)} KT` : '—',
     },
+    { label: 'CLIMBING / DESCENDING', value: `${fmt(stats.climbing)} / ${fmt(stats.descending)}` },
     {
-      label: 'SAMPLE SIZE',
-      value: `${stats.dataScope.toLocaleString()} OF ${stats.totalFlights.toLocaleString()}`,
+      label: 'EMERGENCY SQUAWKS',
+      value: emergencies.length
+        ? `${emergencies.length} — ${[...new Set(emergencies.map((e) => e.squawk))].join(' ')}`
+        : 'NONE',
     },
   ];
-
-  if (stats.hasLiveData) {
-    if (stats.highestAltitude) {
-      rows.push({
-        label: 'HIGHEST ALTITUDE',
-        value: `${stats.highestAltitude.value.toLocaleString()} M`,
-      });
-    }
-    if (stats.fastestAircraft) {
-      rows.push({
-        label: 'FASTEST AIRCRAFT',
-        value: `${Math.round(stats.fastestAircraft.value).toLocaleString()} KM/H`,
-      });
-    }
-    if (stats.avgAltitude != null) {
-      rows.push({
-        label: 'AVG CRUISING ALTITUDE',
-        value: `${stats.avgAltitude.toLocaleString()} M`,
-      });
-    }
-    if (stats.avgSpeed != null) {
-      rows.push({
-        label: 'AVG GROUND SPEED',
-        value: `${Math.round(stats.avgSpeed).toLocaleString()} KM/H`,
-      });
-    }
-  }
-
-  return rows;
 }
 
 function formatTime(iso: string) {
@@ -159,7 +131,6 @@ function formatTime(iso: string) {
 export default function FlightDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [stale, setStale] = useState(false);
   const [entranceComplete, setEntranceComplete] = useState(false);
   const reducedMotion = usePrefersReducedMotion();
   const visible = entranceComplete || reducedMotion;
@@ -177,8 +148,7 @@ export default function FlightDashboard() {
           return;
         }
         setStats(data.stats ?? null);
-        setStale(!!data.stale);
-        setError(data.stale ? (data.error ?? null) : null);
+        setError(null);
       } catch {
         if (attempt < MAX_RETRIES) {
           const delay = 1000 * 2 ** attempt;
@@ -224,7 +194,7 @@ export default function FlightDashboard() {
     >
       {error && (
         <div role="status" className={labelClass + ' mb-4 sm:mb-6'}>
-          {stale ? 'SHOWING CACHED DATA — ' : ''}
+          {stats ? 'SHOWING LAST SNAPSHOT — ' : ''}
           {error}
         </div>
       )}
@@ -259,7 +229,7 @@ export default function FlightDashboard() {
               style={{ border: 'none', borderTop: '1px solid', borderImage: 'linear-gradient(to right, transparent 0%, white 15%, white 85%, transparent 100%) 1' }}
             />,
           ])
-        : Array.from({ length: 7 }).flatMap((_, i) => [
+        : Array.from({ length: 10 }).flatMap((_, i) => [
             <div
               key={i}
               className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 sm:gap-3 py-1"
@@ -277,9 +247,17 @@ export default function FlightDashboard() {
 
     <section className="bg-black flex flex-col md:flex-row justify-center md:justify-end px-4 sm:px-6 md:px-8 lg:px-12 xl:px-14 2xl:px-20 py-4">
       <p className="max-w-sm md:max-w-md lg:max-w-lg text-center md:text-right text-[11px] sm:text-xs md:text-sm leading-relaxed uppercase tracking-[0.2em] text-white/25 font-medium">
-        This site is a personal demo showcasing my frontend and backend skills.
-        Flight data is provided by AviationStack&apos;s free tier, so metrics
-        are sampled and may refresh infrequently due to API rate limits.
+        Live ADS-B data from{' '}
+        <a
+          href="https://opensky-network.org"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline underline-offset-4 transition-colors duration-200 hover:text-white/60"
+        >
+          The OpenSky Network
+        </a>
+        . Coverage depends on volunteer receivers, so oceans and remote regions
+        are underrepresented.
       </p>
     </section>
     </>

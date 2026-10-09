@@ -13,11 +13,11 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://skyabove-dashboard.vercel.app"),
   title: "SKYABOVE — Real-Time Flight Dashboard",
   description:
-    "Live aviation metrics, airline rankings, and delay tracking — built with Next.js, GSAP, and the AviationStack API.",
+    "Live statistics for every tracked aircraft in the sky — built with Next.js, GSAP, and OpenSky Network ADS-B data.",
   openGraph: {
     title: "SKYABOVE — Real-Time Flight Dashboard",
     description:
-      "Live aviation metrics, airline rankings, and delay tracking — built with Next.js, GSAP, and the AviationStack API.",
+      "Live statistics for every tracked aircraft in the sky — built with Next.js, GSAP, and OpenSky Network ADS-B data.",
     url: "https://skyabove-dashboard.vercel.app",
     siteName: "SKYABOVE",
     type: "website",
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "SKYABOVE — Real-Time Flight Dashboard",
     description:
-      "Live aviation metrics, airline rankings, and delay tracking.",
+      "Live statistics for every tracked aircraft in the sky.",
   },
 };
 
