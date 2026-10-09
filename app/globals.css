@@ -3,9 +3,6 @@
 @theme inline {
   --color-background: #ffffff;
   --color-foreground: #1a1a1a;
-  --color-accent: #3B5BF6;
-  --color-accent-light: #7B93FA;
-  --color-accent-dark: #2A4AE5;
   --font-family-sans: var(--font-inter), system-ui, sans-serif;
 }
 

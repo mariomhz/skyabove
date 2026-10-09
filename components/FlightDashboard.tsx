@@ -6,6 +6,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import type { DashboardStats } from '@/lib/aviationstack';
 import { labelClassSmDark as labelClass } from '@/lib/styles';
 import UtcClock from '@/components/UtcClock';
+import { usePrefersReducedMotion } from '@/lib/useMediaQuery';
 
 const POLL_INTERVAL = 5 * 60 * 1000;
 const MAX_RETRIES = 3;
@@ -26,6 +27,7 @@ interface FlightsApiResponse {
 gsap.registerPlugin(ScrollTrigger);
 
 const FlipChar = memo(function FlipChar({ char }: { char: string }) {
+  const reducedMotion = usePrefersReducedMotion();
   const prevRef = useRef(char);
   const [outgoing, setOutgoing] = useState<string | null>(null);
   const outRef = useRef<HTMLSpanElement>(null);
@@ -39,17 +41,12 @@ const FlipChar = memo(function FlipChar({ char }: { char: string }) {
       return;
     }
     if (char === prevRef.current) return;
-    setOutgoing(prevRef.current);
+    if (!reducedMotion) setOutgoing(prevRef.current);
     prevRef.current = char;
-  }, [char]);
+  }, [char, reducedMotion]);
 
   useEffect(() => {
     if (outgoing === null) return;
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) {
-      setOutgoing(null);
-      return;
-    }
     if (outRef.current) {
       gsap.fromTo(
         outRef.current,
@@ -94,9 +91,7 @@ function FlipValue({ value, className }: { value: string; className?: string }) 
 
 function buildRows(stats: DashboardStats) {
   const rows = [
-    { label: 'FLIGHTS WORLDWIDE', value: stats.totalFlights.toLocaleString() },
-    { label: 'CURRENTLY ACTIVE', value: stats.activeFlights.toLocaleString() },
-    { label: 'LANDED', value: stats.landedFlights.toLocaleString() },
+    { label: 'AIRBORNE WORLDWIDE', value: stats.totalFlights.toLocaleString() },
     { label: 'TOP AIRLINE', value: stats.topAirlines[0]?.name.toUpperCase() ?? '—' },
     {
       label: 'BUSIEST DEPARTURE',
@@ -120,7 +115,6 @@ function buildRows(stats: DashboardStats) {
         ? `${stats.mostDelayedFlight.iata} — ${stats.mostDelayedFlight.delay} MIN`
         : '—',
     },
-    { label: 'SCHEDULED', value: stats.scheduledFlights.toLocaleString() },
     {
       label: 'SAMPLE SIZE',
       value: `${stats.dataScope.toLocaleString()} OF ${stats.totalFlights.toLocaleString()}`,
@@ -166,7 +160,9 @@ export default function FlightDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [stale, setStale] = useState(false);
-  const [visible, setVisible] = useState(false);
+  const [entranceComplete, setEntranceComplete] = useState(false);
+  const reducedMotion = usePrefersReducedMotion();
+  const visible = entranceComplete || reducedMotion;
   const sectionRef = useRef<HTMLElement>(null);
   const rowsRef = useRef<HTMLDivElement[]>([]);
   const entranceDone = useRef(false);
@@ -198,14 +194,8 @@ export default function FlightDashboard() {
   }, []);
 
   useEffect(() => {
-    if (!stats || entranceDone.current || !sectionRef.current) return;
+    if (!stats || reducedMotion || entranceDone.current || !sectionRef.current) return;
     entranceDone.current = true;
-
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) {
-      setVisible(true);
-      return;
-    }
 
     const rows = rowsRef.current.filter(Boolean);
     gsap.set(rows, { y: 30, opacity: 0 });
@@ -219,9 +209,9 @@ export default function FlightDashboard() {
         trigger: sectionRef.current,
         start: 'top 80%',
       },
-      onComplete: () => setVisible(true),
+      onComplete: () => setEntranceComplete(true),
     });
-  }, [stats]);
+  }, [stats, reducedMotion]);
 
   const rows = stats ? buildRows(stats) : null;
 
@@ -269,7 +259,7 @@ export default function FlightDashboard() {
               style={{ border: 'none', borderTop: '1px solid', borderImage: 'linear-gradient(to right, transparent 0%, white 15%, white 85%, transparent 100%) 1' }}
             />,
           ])
-        : Array.from({ length: 10 }).flatMap((_, i) => [
+        : Array.from({ length: 7 }).flatMap((_, i) => [
             <div
               key={i}
               className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 sm:gap-3 py-1"

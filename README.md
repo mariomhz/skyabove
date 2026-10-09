@@ -12,7 +12,7 @@ Live flight statistics dashboard built with Next.js. Displays real-time aviation
 
 ## Features
 
-- 10+ real-time flight statistics (active flights, top airlines, busiest airports, delays, etc.)
+- Live flight statistics (airborne flights, top airlines, busiest airports, delays, etc.)
 - Per-character flip animations on value changes
 - Scroll-triggered staggered entrance animations
 - Skeleton loading states during data fetch

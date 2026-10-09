@@ -1,18 +1,15 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
+import { useMediaQuery } from '@/lib/useMediaQuery';
 
 export default function InvertCursor({ targetRef }: { targetRef: React.RefObject<HTMLElement | null> }) {
   const cursorRef = useRef<HTMLDivElement>(null);
   const clipRef = useRef<HTMLDivElement>(null);
   const isOver = useRef(false);
   const introDone = useRef(false);
-  const [hasPointer, setHasPointer] = useState(true);
-
-  useEffect(() => {
-    setHasPointer(window.matchMedia('(pointer: fine)').matches);
-  }, []);
+  const hasPointer = useMediaQuery('(pointer: fine)', true);
 
   useEffect(() => {
     if (!hasPointer) return;

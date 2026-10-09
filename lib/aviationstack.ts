@@ -51,9 +51,6 @@ export interface AviationStackResponse {
 
 export interface DashboardStats {
   totalFlights: number;
-  activeFlights: number;
-  landedFlights: number;
-  scheduledFlights: number;
   topAirlines: { name: string; count: number }[];
   busiestDepartures: { iata: string; name: string; count: number }[];
   busiestArrivals: { iata: string; name: string; count: number }[];
@@ -100,10 +97,6 @@ export function computeDashboardStats(
   flights: AviationStackFlight[],
   total: number
 ): DashboardStats {
-  let active = 0;
-  let landed = 0;
-  let scheduled = 0;
-
   const airlineCounts = new Map<string, number>();
   const departureCounts = new Map<string, { name: string; count: number }>();
   const arrivalCounts = new Map<string, { name: string; count: number }>();
@@ -118,10 +111,6 @@ export function computeDashboardStats(
   let fastest: { value: number; flight: string } | null = null;
 
   for (const f of flights) {
-    if (f.flight_status === "active") active++;
-    else if (f.flight_status === "landed") landed++;
-    else if (f.flight_status === "scheduled") scheduled++;
-
     const airlineName = f.airline?.name || "Unknown";
     airlineCounts.set(airlineName, (airlineCounts.get(airlineName) ?? 0) + 1);
 
@@ -197,9 +186,6 @@ export function computeDashboardStats(
 
   return {
     totalFlights: total,
-    activeFlights: active,
-    landedFlights: landed,
-    scheduledFlights: scheduled,
     topAirlines,
     busiestDepartures,
     busiestArrivals,

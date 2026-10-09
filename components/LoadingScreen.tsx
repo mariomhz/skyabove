@@ -2,21 +2,18 @@
 
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
+import { usePrefersReducedMotion } from '@/lib/useMediaQuery';
 
 export default function LoadingScreen() {
   const overlayRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLSpanElement>(null);
   const [done, setDone] = useState(false);
+  const reducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
     const overlay = overlayRef.current;
     const text = textRef.current;
-    if (!overlay || !text) return;
-
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setDone(true);
-      return;
-    }
+    if (!overlay || !text || reducedMotion) return;
 
     const tl = gsap.timeline({
       onComplete: () => setDone(true),
@@ -32,9 +29,9 @@ export default function LoadingScreen() {
       duration: 0.6,
       ease: 'power3.inOut',
     });
-  }, []);
+  }, [reducedMotion]);
 
-  if (done) return null;
+  if (done || reducedMotion) return null;
 
   return (
     <div

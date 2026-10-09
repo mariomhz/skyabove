@@ -105,13 +105,17 @@ export default function Home() {
         </p>
         <div className="flex gap-4">
           <a
-            href="#"
+            href="https://github.com/mariomhz/skyabove"
+            target="_blank"
+            rel="noopener noreferrer"
             className={`${labelClassDark} transition-colors duration-200 hover:text-white/60`}
           >
             GITHUB
           </a>
           <a
-            href="#"
+            href="https://www.linkedin.com/in/mariohrdezc/"
+            target="_blank"
+            rel="noopener noreferrer"
             className={`${labelClassDark} transition-colors duration-200 hover:text-white/60`}
           >
             LINKEDIN
