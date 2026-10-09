@@ -4,6 +4,9 @@ import { airlineName } from "@/lib/airlines";
   OpenSky Network REST API — https://openskynetwork.github.io/opensky-api/rest.html
   A global /states/all call costs 4 credits. Anonymous clients get 400 credits/day,
   OAuth2 API clients get 4,000/day.
+
+  OpenSky blocks AWS and other hyperscalers, so this runs in a scheduled GitHub
+  Action (scripts/build-snapshot.ts), not on Vercel. The site reads the result.
 */
 
 const STATES_URL = "https://opensky-network.org/api/states/all";
@@ -13,7 +16,7 @@ const TOKEN_URL =
 const CLIENT_ID = process.env.OPENSKY_CLIENT_ID;
 const CLIENT_SECRET = process.env.OPENSKY_CLIENT_SECRET;
 
-export const hasCredentials = Boolean(CLIENT_ID && CLIENT_SECRET);
+const hasCredentials = Boolean(CLIENT_ID && CLIENT_SECRET);
 
 /** State vector tuple, indexed as documented by OpenSky. */
 export type StateVector = [
@@ -39,6 +42,34 @@ export type StateVector = [
 interface StatesResponse {
   time: number;
   states: StateVector[] | null;
+}
+
+/**
+ * Compact airborne aircraft record, kept as a tuple so ~12,000 aircraft fit in
+ * well under a megabyte.
+ */
+export type Aircraft = [
+  icao24: string,
+  callsign: string,
+  countryIndex: number,
+  lat: number,
+  lng: number,
+  altitudeFt: number | null,
+  headingDeg: number | null,
+  speedKt: number | null,
+  verticalRateFpm: number | null,
+  squawk: string | null,
+];
+
+export interface AircraftSnapshot {
+  time: number;
+  countries: string[];
+  aircraft: Aircraft[];
+}
+
+export interface Snapshot {
+  stats: DashboardStats;
+  positions: AircraftSnapshot;
 }
 
 export interface DashboardStats {
@@ -73,7 +104,6 @@ async function getToken(): Promise<string | null> {
       client_id: CLIENT_ID!,
       client_secret: CLIENT_SECRET!,
     }),
-    cache: "no-store",
     signal: AbortSignal.timeout(10_000),
   });
   if (!res.ok) throw new Error(`OpenSky auth HTTP ${res.status}`);
@@ -90,8 +120,7 @@ export async function fetchStates(): Promise<StatesResponse> {
   const accessToken = await getToken();
   const res = await fetch(STATES_URL, {
     headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
-    cache: "no-store",
-    signal: AbortSignal.timeout(20_000),
+    signal: AbortSignal.timeout(30_000),
   });
 
   if (res.status === 429) {
@@ -201,5 +230,53 @@ export function computeDashboardStats({ time, states }: StatesResponse): Dashboa
     descending,
     emergencies,
     fetchedAt: new Date(time * 1000).toISOString(),
+  };
+}
+
+/* ── Compact positions for the live map ── */
+
+const MS_TO_FPM = 196.85;
+
+const scaled = (n: number | null, factor: number, step = 1) =>
+  n == null ? null : Math.round((n * factor) / step) * step;
+
+const toFixed3 = (n: number) => Math.round(n * 1000) / 1000;
+
+function compactAircraft({ time, states }: StatesResponse): AircraftSnapshot {
+  const countries: string[] = [];
+  const countryIndex = new Map<string, number>();
+  const aircraft: Aircraft[] = [];
+
+  for (const s of states ?? []) {
+    if (s[8] || s[5] == null || s[6] == null) continue;
+
+    let ci = countryIndex.get(s[2]);
+    if (ci === undefined) {
+      ci = countries.push(s[2]) - 1;
+      countryIndex.set(s[2], ci);
+    }
+
+    aircraft.push([
+      s[0],
+      s[1]?.trim() ?? "",
+      ci,
+      toFixed3(s[6]),
+      toFixed3(s[5]),
+      scaled(s[7] ?? s[13], M_TO_FT, 100),
+      scaled(s[10], 1),
+      scaled(s[9], MS_TO_KT),
+      scaled(s[11], MS_TO_FPM, 50),
+      s[14],
+    ]);
+  }
+
+  return { time, countries, aircraft };
+}
+
+export async function buildSnapshot(): Promise<Snapshot> {
+  const response = await fetchStates();
+  return {
+    stats: computeDashboardStats(response),
+    positions: compactAircraft(response),
   };
 }

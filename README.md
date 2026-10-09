@@ -25,8 +25,16 @@ Live flight tracking dashboard built with Next.js. Plots every aircraft currentl
 - Scroll-triggered staggered entrance animations
 - Skeleton loading states during data fetch
 - Invert cursor effect on the hero title
-- One shared server-side snapshot feeds both the map and the stats, sized to the OpenSky credit budget and serving the last good data if a refresh fails
+- One published snapshot feeds both the map and the stats; the server caches it and serves the last good data if a refresh fails
 - Responsive layout for mobile and desktop
+
+## How the data flows
+
+OpenSky blocks requests from AWS and other large cloud providers, which includes Vercel. So the fetch happens elsewhere:
+
+1. A scheduled GitHub Action (`.github/workflows/snapshot.yml`) runs every 15 minutes, fetches the global OpenSky snapshot, and runs `scripts/build-snapshot.ts` to compute the stats and compact aircraft positions.
+2. It force-pushes the result as `snapshot.json` to the `data` branch (always a single commit).
+3. The Next.js API routes read that file, cache it for two minutes, and serve it to the map and the stats.
 
 ## Setup
 
@@ -35,19 +43,22 @@ npm install
 npm run dev
 ```
 
-The app works without any configuration using anonymous OpenSky access. For fresher data, create a free OpenSky account, add an API client under your account page, and put its credentials in `.env.local`:
+Local development reads the published snapshot, so no configuration is needed. To build a snapshot yourself:
 
 ```
-OPENSKY_CLIENT_ID=your_client_id
-OPENSKY_CLIENT_SECRET=your_client_secret
+npx tsx scripts/build-snapshot.ts
 ```
+
+For a reliable OpenSky quota, create a free OpenSky account, add an API client under your account page, and save its credentials as GitHub repository secrets named `OPENSKY_CLIENT_ID` and `OPENSKY_CLIENT_SECRET`. Without them the workflow requests anonymously and shares the GitHub runner's IP quota with other users.
 
 ## Deployment
 
-The project is deployed on Vercel. Set the optional `OPENSKY_CLIENT_ID` and `OPENSKY_CLIENT_SECRET` environment variables in your Vercel project settings.
+The project is deployed on Vercel. `vercel.json` disables deployments for the `data` branch so snapshot updates don't trigger builds. Set `SNAPSHOT_URL` only if the snapshot is published somewhere other than this repository's `data` branch.
 
 ## Notes
 
-A global OpenSky query costs 4 API credits. Anonymous access allows 400 credits per day, so the server refreshes the snapshot every 15 minutes; with API credentials (4,000 credits per day) it refreshes every 2 minutes. Clients poll the cached endpoints every minute, which never costs extra credits.
+A global OpenSky query costs 4 API credits. A run every 15 minutes uses at most 384 credits a day, within both the anonymous (400) and API client (4,000) daily allowances. GitHub may delay scheduled runs at busy times, and disables schedules in public repositories after 60 days without activity; it emails a warning first, and the workflow can be re-enabled from the Actions tab.
+
+Between snapshots, the map advances each aircraft along its heading at its ground speed for up to 20 minutes.
 
 ADS-B coverage depends on volunteer receivers, so oceans and remote regions are underrepresented.

@@ -1,0 +1,48 @@
+# OpenSky blocks requests from AWS, where Vercel runs, so the global snapshot is
+# fetched here and published to the `data` branch, which the site reads.
+name: Flight snapshot
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: flight-snapshot
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build snapshot from OpenSky
+        env:
+          # Optional; without them requests are anonymous and share the runner IP's quota
+          OPENSKY_CLIENT_ID: ${{ secrets.OPENSKY_CLIENT_ID }}
+          OPENSKY_CLIENT_SECRET: ${{ secrets.OPENSKY_CLIENT_SECRET }}
+        run: npx -y tsx@4 scripts/build-snapshot.ts "$RUNNER_TEMP/snapshot.json"
+
+      # A single force-pushed commit, so the branch never accumulates history
+      - name: Publish to the data branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir "$RUNNER_TEMP/publish"
+          mv "$RUNNER_TEMP/snapshot.json" "$RUNNER_TEMP/publish/"
+          cd "$RUNNER_TEMP/publish"
+          git init -q -b data
+          git add snapshot.json
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -q -m "Flight snapshot $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push -q -f "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" data

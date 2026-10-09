@@ -28,7 +28,7 @@ function tickInterval(zoom: number) {
   return 1_000;
 }
 // Beyond this, extrapolated positions drift too far from reality to be useful
-const MAX_EXTRAPOLATION_S = 10 * 60;
+const MAX_EXTRAPOLATION_S = 20 * 60;
 const SELECTED_ZOOM = 4;
 // Frames the populated latitudes rather than the poles
 const INITIAL_CENTER: [number, number] = [-20, 30];
